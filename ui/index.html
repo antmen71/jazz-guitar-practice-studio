@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jazz Guitar Practice Studio — 8-Module Curriculum &amp; AI Jazz Coach</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- Top Studio Header -->
+    <header class="top-header">
+      <div class="brand-group">
+        <div class="ctrl-group" style="background:rgba(2,132,199,0.18);border-color:#38bdf8;padding:0.28rem 0.55rem;">
+          <span id="drill-select-label" class="ctrl-label" style="color:#bae6fd;font-weight:800;">Chord Drill:</span>
+          <select id="select-module" class="select-studio" style="background:#0b1322;color:#fff;border-color:#38bdf8;padding:0.32rem 0.6rem;font-size:0.88rem;" onchange="selectModule(this.value)"></select>
+        </div>
+        <div>
+          <h1 id="header-mod-title" class="brand-title">Jazz Guitar Practice Studio</h1>
+          <div id="header-mod-sub" class="brand-sub">Jody Fisher &amp; Berklee Guide-Tone Voice-Leading System</div>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <button class="btn-roadmap" onclick="toggleRoadmapModal()" title="View Full 8-Module Jazz Guitar Curriculum (R)">
+          🗺️ 8-Module Roadmap (R)
+        </button>
+
+        <button class="btn-ai-coach" onclick="toggleAiDrawer()" title="Ask the Context-Aware AI Jazz Guitar Coach (A)">
+          🤖 AI Jazz Coach (A)
+        </button>
+
+        <div id="pos-strategy-wrap" class="ctrl-group" title="Fretboard position strategy across the 12 keys">
+          <span class="ctrl-label">Neck:</span>
+          <select id="select-pos-mode" class="select-studio" onchange="setPosMode(this.value)">
+            <option value="slide">Slide Single Grip (Drop-3 Form A • Frets 0–13)</option>
+            <option value="zone">Stay in One Zone (6th / 5th Str Alternating)</option>
+          </select>
+        </div>
+
+        <div class="ctrl-group" title="UI zoom scale for comfortable reading with guitar in lap">
+          <span class="ctrl-label">Zoom:</span>
+          <button id="zoom-100" class="zoom-btn active" onclick="setUiScale(16)">100%</button>
+          <button id="zoom-115" class="zoom-btn" onclick="setUiScale(18.5)">115%</button>
+          <button id="zoom-130" class="zoom-btn" onclick="setUiScale(21)">130%</button>
+        </div>
+
+        <button class="icon-btn" onclick="requestAppFullscreen()" title="Toggle Fullscreen (F11)">⛶</button>
+      </div>
+    </header>
+
+    <!-- Continuous Circle of Fourths & Key Loop Engine Panel -->
+    <section id="circle-panel" class="circle-panel">
+      <div class="circle-top-row">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.65rem;">
+          <div class="mode-pill-switch">
+            <button id="btn-mode-single" class="mode-pill-btn" onclick="setPracticeLoopMode('single')">
+              🎯 Single Key Loop
+            </button>
+            <button id="btn-mode-circle" class="mode-pill-btn active-gold" onclick="setPracticeLoopMode('circle')">
+              🔄 12-Key Circle Loop (Continuous)
+            </button>
+          </div>
+
+          <div class="ctrl-group">
+            <span id="key-select-label" class="ctrl-label">Starting Key:</span>
+            <select id="select-key" class="select-studio" onchange="onKeyChange(this.value)"></select>
+          </div>
+        </div>
+
+        <!-- Circle-Only Settings Row -->
+        <div id="circle-controls" class="circle-options-row">
+          <div class="ctrl-group">
+            <span class="ctrl-label">Order:</span>
+            <select id="select-circle-order" class="select-studio" onchange="setCircleOrderMode(this.value)">
+              <option value="fourths">Circle of 4ths (C→F→Bb...)</option>
+              <option value="fifths">Circle of 5ths (C→G→D...)</option>
+              <option value="random">Random 12 Keys (Quiz)</option>
+            </select>
+          </div>
+
+          <div class="ctrl-group">
+            <div class="mode-pill-switch" style="padding:0.12rem;">
+              <button id="btn-unit-chorus" class="mode-pill-btn active-gold" style="padding:0.22rem 0.55rem;font-size:0.8rem;" onclick="setCircleUnitMode('chorus')">
+                Choruses
+              </button>
+              <button id="btn-unit-minutes" class="mode-pill-btn" style="padding:0.22rem 0.55rem;font-size:0.8rem;" onclick="setCircleUnitMode('minutes')">
+                Minutes
+              </button>
+            </div>
+            <button class="stepper-btn" onclick="stepCircleAmount(-1)">−</button>
+            <span id="circle-amount-readout" class="stepper-val">1 Chorus</span>
+            <button class="stepper-btn" onclick="stepCircleAmount(1)">+</button>
+          </div>
+
+          <label class="mix-toggle" title="Inserts 1 bar (4 beats) of count-in & previews the new fret box between key changes">
+            <input id="chk-circle-breath" type="checkbox" onchange="setCircleBreath(this.checked)" />
+            <span>1-Bar Transition Breath</span>
+          </label>
+
+          <div class="ctrl-group" title="Behavior after completing all 12 keys">
+            <span class="ctrl-label">After 12 Keys:</span>
+            <select id="select-circle-end" class="select-studio" onchange="setCircleEndAction(this.value)">
+              <option value="plus5">+5 BPM &amp; Continue</option>
+              <option value="loop">Infinite Loop (Keep BPM)</option>
+              <option value="stop">Stop After 12 Keys</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual 12-Key Ring Strip -->
+      <div id="key-ring-grid" class="key-ring-grid"></div>
+
+      <!-- Live Circle Telemetry & Mode Status -->
+      <div id="circle-telemetry" class="circle-live-status">
+        <span id="circle-progress-text"></span>
+        <span id="next-key-alert" class="next-key-alert"></span>
+      </div>
+    </section>
+
+    <!-- 4-Block Daily Workout Selector -->
+    <section id="block-tabs" class="block-grid"></section>
+
+    <!-- Live Guitar Listener & Auto-Advance Judge Deck -->
+    <section id="judge-panel" class="judge-panel">
+      <div class="judge-top-row">
+        <div class="judge-left-controls">
+          <button id="btn-auto-judge" class="btn-judge-toggle" onclick="toggleAutoJudge()" title="Listen to your guitar and auto-advance clean reps, BPM, and Circle keys (Shortcut: J)">
+            <span id="judge-mic-dot" class="judge-mic-dot"></span>
+            <span id="judge-btn-label">🎙️ Auto-Judge: OFF (J)</span>
+          </button>
+
+          <div class="ctrl-group" title="Select your audio interface guitar input (WASAPI low-latency shared mode)">
+            <span class="ctrl-label">Input:</span>
+            <select id="select-audio-in" class="select-studio" style="max-width:250px;" onchange="onJudgeDeviceChange(this.value)">
+              <option value="">Default Audio Input</option>
+            </select>
+            <select id="select-audio-ch" class="select-studio" onchange="onJudgeChannelChange(this.value)" title="Select DI input channel">
+              <option value="sum">Ch 1+2 Mix</option>
+              <option value="ch1">Input 1 (DI)</option>
+              <option value="ch2">Input 2 (Line/Mic)</option>
+            </select>
+          </div>
+
+          <div class="judge-meter-group" title="Live guitar input signal level">
+            <span class="ctrl-label">Signal:</span>
+            <div class="judge-meter-track">
+              <div id="judge-meter-fill" class="judge-meter-fill"></div>
+            </div>
+            <span id="judge-db-readout" class="judge-db-readout">-90 dB</span>
+          </div>
+        </div>
+
+        <div class="judge-right-controls">
+          <div class="ctrl-group" title="Minimum chorus accuracy required to count as a Clean Rep / advance key">
+            <span class="ctrl-label">Pass:</span>
+            <select id="select-judge-thresh" class="select-studio" onchange="onJudgeThresholdChange(this.value)">
+              <option value="80">80% (Forgiving)</option>
+              <option value="85" selected>85% (Standard)</option>
+              <option value="90">90% (Strict)</option>
+            </select>
+          </div>
+
+          <div class="ctrl-group" title="Audio input latency compensation — click Calibrate and chuck 4 muted beats with the click">
+            <span class="ctrl-label">Latency:</span>
+            <span id="judge-lat-readout" class="judge-lat-val">28 ms</span>
+            <button id="btn-calibrate-lat" class="btn-secondary" style="padding:0.24rem 0.55rem;font-size:0.79rem;" onclick="calibrateLatency()">
+              🎯 Calibrate
+            </button>
+          </div>
+
+          <label class="mix-toggle" title="In 12-Key Circle mode, hold the active key until you play a clean chorus (>= Pass%), then modulate to the next key">
+            <input id="chk-hold-key" type="checkbox" checked onchange="setJudgeHoldKey(this.checked)" />
+            <span>Hold Key Until Clean</span>
+          </label>
+
+          <label class="mix-toggle" title="Automatically mute synthetic Guide Guitar while Auto-Judge is listening (useful when using a room mic instead of direct DI)">
+            <input id="chk-judge-mute-lead" type="checkbox" onchange="setJudgeMuteLead(this.checked)" />
+            <span>Mute Guide w/ Judge</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="judge-score-row">
+        <div id="judge-summary-text" class="judge-summary-text">
+          🎙️ Plug guitar into your audio interface &amp; enable <strong>Auto-Judge (J)</strong> — clean 4-bar choruses automatically log reps, step +5 BPM, and advance keys!
+        </div>
+
+        <div class="judge-bars-right">
+          <div class="judge-bar-pills">
+            <span id="judge-bar-1" class="judge-bar-pill">B1: --</span>
+            <span id="judge-bar-2" class="judge-bar-pill">B2: --</span>
+            <span id="judge-bar-3" class="judge-bar-pill">B3: --</span>
+            <span id="judge-bar-4" class="judge-bar-pill">B4: --</span>
+          </div>
+          <button id="btn-replay-take" class="btn-secondary" style="padding:0.28rem 0.65rem;font-size:0.8rem;" onclick="replayLastTake()" title="Play back your most recently recorded 4-bar guitar take">
+            🔊 Replay Take
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Studio Command Deck -->
+    <section class="deck-grid">
+      <!-- Left: Drill Mission + Rhythm Submode + 4-Bar Progression -->
+      <div class="panel-card">
+        <div>
+          <div class="drill-header">
+            <h2 id="drill-title" class="drill-title"></h2>
+            <span id="drill-goal-badge" class="goal-pill"></span>
+          </div>
+          <p id="drill-purpose" class="drill-purpose"></p>
+          <div id="drill-howto" class="drill-howto"></div>
+
+          <!-- Block 1 Sub-Rhythm Selector -->
+          <div id="b1-rhythm-bar" class="submode-bar">
+            <span class="ctrl-label" style="font-size:0.83rem;">Block 1 Comping Feel:</span>
+            <button id="btn-rhythm-four" class="submode-btn" onclick="setB1Rhythm('four')">
+              Stage 1 (First 15m): Four-to-the-Bar (1-2-3-4)
+            </button>
+            <button id="btn-rhythm-charleston" class="submode-btn active" onclick="setB1Rhythm('charleston')">
+              Stage 2 (Last 30m): Charleston Rhythm (Beat 1 &amp; 2-&amp;)
+            </button>
+          </div>
+        </div>
+
+        <div class="bars-section">
+          <div class="bars-header">
+            <span><strong>4-Bar ii–V–I Progression</strong> (Click any chord card to audition voicing)</span>
+            <span id="feel-readout" style="font-family:Consolas,monospace;font-weight:700;">4/4 Jazz Swing (62%/38%)</span>
+          </div>
+          <div id="bar-cards" class="bars-grid"></div>
+        </div>
+      </div>
+
+      <!-- Right: Timer + BPM Graduation Ladder + Audio Mixer -->
+      <div class="panel-card">
+        <div class="timer-row">
+          <div>
+            <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;">BLOCK PRACTICE TIMER</div>
+            <div id="timer-display" class="timer-readout">45:00</div>
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <button id="btn-timer" class="btn-secondary" onclick="toggleTimer()">⏱ Start Timer (T)</button>
+            <button class="btn-secondary" onclick="resetTimer()">Reset</button>
+          </div>
+        </div>
+
+        <div class="bpm-box">
+          <div class="bpm-top">
+            <span id="bpm-ladder-label" style="font-size:0.88rem;font-weight:800;">BPM Ladder (3 Clean Reps = +5 BPM)</span>
+            <div style="display:flex;align-items:center;gap:0.32rem;">
+              <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="tapTempo()" title="Tap repeatedly in rhythm to set tempo">👆 Tap</button>
+              <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="adjustBpm(-5)">-5</button>
+              <span id="bpm-readout" class="bpm-big">65 BPM</span>
+              <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="adjustBpm(5)">+5</button>
+            </div>
+          </div>
+
+          <input id="bpm-slider" class="bpm-slider" type="range" min="45" max="160" value="65" oninput="setBpm(this.value)" />
+
+          <!-- Live 4-Beat Visual Metronome Pads -->
+          <div class="beat-pads-row">
+            <div id="beat-pad-1" class="beat-pad">1</div>
+            <div id="beat-pad-2" class="beat-pad">2 (Hi-Hat)</div>
+            <div id="beat-pad-3" class="beat-pad">3</div>
+            <div id="beat-pad-4" class="beat-pad">4 (Hi-Hat)</div>
+          </div>
+
+          <div class="rep-row">
+            <div id="rep-dots" class="rep-dots"></div>
+            <div style="display:flex;gap:0.45rem;">
+              <button class="btn-stumble" onclick="markStumble()" title="Reset streak or drop 5 BPM if you stumbled (Backspace)">✗ Stumbled</button>
+              <button class="btn-clean" onclick="markCleanRep()" title="Log 1 clean 4-bar chorus (Enter)">✓ Clean Rep (+1)</button>
+            </div>
+          </div>
+          <div id="grad-status" class="grad-status"></div>
+        </div>
+
+        <div>
+          <div class="mixer-grid">
+            <label class="mix-toggle">
+              <input id="chk-lead" type="checkbox" checked onchange="leadEnabled = this.checked" />
+              <span>Guide Guitar</span>
+            </label>
+            <label class="mix-toggle">
+              <input id="chk-comp" type="checkbox" onchange="compEnabled = this.checked" />
+              <span>Jazz Comping</span>
+            </label>
+            <label class="mix-toggle">
+              <input id="chk-bass" type="checkbox" checked onchange="bassEnabled = this.checked" />
+              <span>Walking Bass</span>
+            </label>
+            <label class="mix-toggle">
+              <input id="chk-swing" type="checkbox" checked onchange="swingEnabled = this.checked; updateFeelLabel();" />
+              <span>Triplet Swing</span>
+            </label>
+            <label class="mix-toggle" title="Gives a 1-bar (1-2-3-4) count-in when pressing Start so you can place your hands on the guitar">
+              <input id="chk-countin" type="checkbox" checked onchange="countInEnabled = this.checked" />
+              <span>1-Bar Count-In</span>
+            </label>
+            <label class="mix-toggle" style="justify-content:space-between;" title="Metronome click volume">
+              <span>Click</span>
+              <input id="slider-metro-vol" type="range" min="0" max="150" value="100" oninput="setMetroVol(this.value / 100)" style="width:4.2rem;accent-color:var(--accent-gold);" />
+            </label>
+            <label class="mix-toggle" style="justify-content:space-between;" title="Master output volume">
+              <span>Master</span>
+              <input type="range" min="0" max="100" value="82" oninput="masterVol = this.value / 100" style="width:4.2rem;accent-color:var(--accent-blue);" />
+            </label>
+          </div>
+
+          <div id="countin-banner" class="countin-banner" style="margin-top:0.45rem;"></div>
+
+          <div class="transport-row">
+            <button id="btn-metro-only" class="btn-secondary btn-metro" onclick="toggleMetroOnly()" title="Run standalone metronome without backing instruments (M)">
+              🥁 Metronome Only (M)
+            </button>
+            <button id="btn-play" class="btn-play" onclick="togglePlay()">
+              <span id="play-icon">▶</span>
+              <span id="play-label">Start Backing &amp; Drill (Space)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Giant Studio Interactive Fretboard -->
+    <section id="fretboard-section" class="fretboard-panel">
+      <div class="fretboard-toolbar">
+        <div class="fretboard-tools-left">
+          <strong style="font-size:1rem;">Interactive Fretboard</strong>
+          <span id="shape-family-badge" class="shape-family-badge kalip-a">FORM A • 6th-Str Drop-3</span>
+
+          <button id="btn-box-zoom" class="submode-btn" onclick="toggleBoxZoom()" title="Zoom in exclusively on the active position box (Z)">
+            🔍 Focus Box Zoom (Z)
+          </button>
+
+          <select id="select-label" class="select-studio" onchange="labelMode = this.value; renderFretboard();">
+            <option value="note">Note Names (D, F, A, C)</option>
+            <option value="role">Chord / Scale Degrees (1, b3, 5, b7, #4)</option>
+            <option value="finger">Left-Hand Fingers (1 – 4)</option>
+            <option value="both">Note + Degree (F·b3)</option>
+          </select>
+        </div>
+
+        <div id="note-inspector" class="note-inspector">
+          Click any fret or tab step below to audition its pitch and degree.
+        </div>
+      </div>
+
+      <div class="fret-scroll">
+        <div id="fretboard-mount"></div>
+      </div>
+
+      <div class="legend-row">
+        <div class="legend-items">
+          <span class="legend-item">
+            <span class="legend-swatch" style="background:var(--accent-gold);border:2px solid #fde68a;"></span>
+            <strong>Guide Tones (3 &amp; 7 — Target Notes!)</strong>
+          </span>
+          <span class="legend-item">
+            <span class="legend-swatch" style="background:var(--accent-blue-dark);border:2px solid #7dd3fc;"></span>
+            <span>Root &amp; 5th / 9th</span>
+          </span>
+          <span class="legend-item">
+            <span class="legend-swatch" style="background:#111827;border:2px solid var(--accent-blue);"></span>
+            <span>Scale Tones / Extensions (9, 11, 13)</span>
+          </span>
+          <span class="legend-item">
+            <span class="legend-swatch" style="background:#3b0764;border:2px solid var(--accent-purple);"></span>
+            <span>Lydian #4 Color</span>
+          </span>
+        </div>
+        <strong id="box-range-label" style="font-family:Consolas,monospace;color:var(--accent-gold-bright);"></strong>
+      </div>
+    </section>
+
+    <!-- Step-by-Step Tab & Voice-Leading Strip -->
+    <section class="strip-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <strong style="font-size:0.94rem;">Step-by-Step Tab &amp; Guide-Tone Voice-Leading Map (Click to Audition)</strong>
+        <span id="strip-meta" style="font-family:Consolas,monospace;font-size:0.82rem;color:var(--text-muted);"></span>
+      </div>
+      <div id="sequence-strip" class="strip-list"></div>
+    </section>
+
+    <!-- Hands-Free Guitarist Keyboard Shortcuts Bar -->
+    <footer class="shortcut-bar">
+      <div class="kbd-list">
+        <span><kbd>Space</kbd> Play / Stop</span>
+        <span><kbd>J</kbd> Auto-Judge</span>
+        <span><kbd>R</kbd> Roadmap</span>
+        <span><kbd>A</kbd> AI Coach</span>
+        <span><kbd>C</kbd> Single / Circle</span>
+        <span><kbd>N</kbd> Next Key</span>
+        <span><kbd>M</kbd> Metronome</span>
+        <span><kbd>Enter</kbd> ✓ Clean Rep</span>
+        <span><kbd>↑</kbd> <kbd>↓</kbd> ±5 BPM</span>
+        <span><kbd>Z</kbd> Box Zoom</span>
+        <span><kbd>1</kbd>–<kbd>4</kbd> Select Block</span>
+      </div>
+      <span id="save-indicator" style="font-family:Consolas,monospace;">Progress auto-saved</span>
+    </footer>
+
+  </div>
+
+  <!-- 8-Module Master Roadmap Modal -->
+  <div id="roadmap-backdrop" class="modal-backdrop" onclick="if(event.target===this) toggleRoadmapModal()">
+    <div class="roadmap-modal">
+      <div class="modal-header">
+        <div>
+          <strong style="font-size:1.1rem;">🗺️ 8-Module Jazz Guitar Master Curriculum &amp; Graduation Map</strong>
+          <div style="font-size:0.82rem;color:var(--text-muted);margin-top:0.15rem;">
+            Vertical Position Locking: Master each Drop voicing family together with its matching Arpeggios, Modes, and Improvisation.
+          </div>
+        </div>
+        <button class="btn-secondary" onclick="toggleRoadmapModal()">✕ Close (Esc)</button>
+      </div>
+      <div id="roadmap-cards" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- In-App AI Jazz Coach Drawer -->
+  <aside id="ai-drawer" class="ai-drawer">
+    <div class="ai-header">
+      <div>
+        <strong style="font-size:0.98rem;">🤖 AI Jazz Guitar Coach</strong>
+        <div id="ai-status-sub" style="font-size:0.75rem;color:var(--text-muted);">Connected to live fretboard &amp; chord state</div>
+      </div>
+      <div style="display:flex;gap:0.4rem;">
+        <button class="btn-secondary" style="padding:0.28rem 0.55rem;font-size:0.78rem;" onclick="toggleAiSettings()">⚙ AI Setup</button>
+        <button class="btn-secondary" style="padding:0.28rem 0.55rem;font-size:0.78rem;" onclick="toggleAiDrawer()">✕</button>
+      </div>
+    </div>
+
+    <div id="ai-ctx-bar" class="ai-ctx-bar"></div>
+
+    <!-- Secure Local AI API Config Panel -->
+    <div id="ai-settings-box" class="ai-settings-box">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <strong>AI Connection Settings (Saved Locally Only)</strong>
+        <button class="ai-chip" onclick="openGeminiKeyPage()">🔑 Get Free Gemini API Key</button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem;">
+        <div>
+          <label style="font-size:0.75rem;color:var(--text-muted);">Provider</label>
+          <select id="ai-provider" class="ai-input-field" onchange="onAiProviderSelect()">
+            <option value="gemini">Google Gemini (Recommended)</option>
+            <option value="openai">OpenAI</option>
+            <option value="ollama">Local Ollama (Offline)</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.75rem;color:var(--text-muted);">Model</label>
+          <input id="ai-model" type="text" class="ai-input-field" value="gemini-2.5-flash" />
+        </div>
+      </div>
+
+      <div id="ai-key-row">
+        <label style="font-size:0.75rem;color:var(--text-muted);">API Key (Stored privately on disk)</label>
+        <input id="ai-api-key" type="password" class="ai-input-field" placeholder="Paste API key here..." />
+      </div>
+
+      <div id="ai-url-row" style="display:none;">
+        <label style="font-size:0.75rem;color:var(--text-muted);">Ollama Server URL</label>
+        <input id="ai-base-url" type="text" class="ai-input-field" value="http://localhost:11434" />
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span id="ai-save-msg" style="font-size:0.76rem;color:#34d399;"></span>
+        <button class="btn-clean" style="padding:0.32rem 0.8rem;font-size:0.82rem;" onclick="saveAiSettings()">Save</button>
+      </div>
+    </div>
+
+    <div id="ai-messages" class="ai-messages"></div>
+
+    <div class="ai-quick-chips">
+      <button class="ai-chip" onclick="askQuickQuestion('chord')">🎸 Analyze current voicing</button>
+      <button class="ai-chip" onclick="askQuickQuestion('guide')">🎯 Show b7 → 3 resolution</button>
+      <button class="ai-chip" onclick="askQuickQuestion('tip')">🖐 Fingering &amp; picking tip</button>
+      <button class="ai-chip" onclick="askQuickQuestion('next')">🗺️ What to practice next?</button>
+    </div>
+
+    <div class="ai-composer">
+      <textarea id="ai-input" class="ai-textarea" placeholder="Ask in English or Turkish about voicings, guide tones, Drop-2/Drop-3, or practice plan... (Enter = Send)"></textarea>
+      <button id="btn-ai-send" class="btn-clean" style="padding:0 0.9rem;" onclick="sendAiQuestion()">Send</button>
+    </div>
+  </aside>
+
+  <script src="app.js"></script>
+</body>
+</html>
