@@ -2900,6 +2900,13 @@ function buildInstantLocalAnswer(kind) {
   const curName = chordNames[activeBarIdx];
   const curObj = chordObjs[activeBarIdx];
 
+  if (kind === 'help') {
+    return `🧭 **Jazz Guitar Practice Studio — Quick Guide:**\n` +
+      `• **Blocks & Drills (Keys 1–4 + Top-Left Menu):** Pair Drop-3 / Pure Drop-2 voicings (Block 1) with in-box 7th Arpeggios (Block 2), Dorian/Mixolydian/Lydian #4 (Block 3), and Trio Soloing (Block 4).\n` +
+      `• **Loop Engine (C):** Toggle Single Key Loop or Continuous 12-Key Circle (4ths / 5ths / Random).\n` +
+      `• **Live Guitar Auto-Judge (J):** Listens via WASAPI, grades each 4-bar chorus, and auto-advances Clean Reps, +5 BPM, and Circle keys (use 🎯 Calibrate once to lock latency; 🔊 Replay Take plays back your last chorus).\n` +
+      `• **Fretboard & Zoom (Z):** Click any fret/card to audition; press Z to zoom into the active fret box.`;
+  }
   if (kind === 'chord') {
     const lines = curObj.notes.map(n =>
       `• String ${n.s}, Fret ${n.f} → ${n.name} (Degree: ${n.role}${n.isGuide ? ' ★ Guide Tone' : ''}, LH ${n.finger === 0 ? 'Open' : 'Finger ' + n.finger})`
@@ -2958,8 +2965,8 @@ window.toggleAiDrawer = function() {
     if (document.getElementById('ai-messages').children.length === 0) {
       appendAiMessage(
         'assistant',
-        'Welcome! I\'m your context-aware Jazz Guitar Coach. I can see your active drill, voicing, key, fret box, and BPM in real time.\n\n' +
-        'Use the quick-analysis buttons below anytime, or open ⚙ AI Setup to connect a free Gemini API key (or local Ollama) for open-ended Q&A in English or Turkish.'
+        'Welcome! Ask me anything about using Jazz Guitar Practice Studio (Auto-Judge, Calibration, 12-Key Circle, Blocks, Shortcuts) or the jazz concepts on your screen (Drop-2/Drop-3, Guide Tones, Modes, Improvisation).\n\n' +
+        'Works immediately offline without an API key, or open ⚙ AI Setup anytime to connect Gemini, OpenAI, or Local Ollama.'
       );
     }
     setTimeout(() => document.getElementById('ai-input').focus(), 80);
@@ -2975,7 +2982,7 @@ window.onAiProviderSelect = function() {
   document.getElementById('ai-key-row').style.display = (p === 'ollama') ? 'none' : 'block';
   document.getElementById('ai-url-row').style.display = (p === 'ollama') ? 'block' : 'none';
   const modelEl = document.getElementById('ai-model');
-  if (p === 'gemini') modelEl.value = 'gemini-2.5-flash';
+  if (p === 'gemini') modelEl.value = 'gemini-3.8-flash';
   else if (p === 'openai') modelEl.value = 'gpt-4o-mini';
   else modelEl.value = 'llama3.1';
 };
@@ -2993,17 +3000,17 @@ function refreshAiStatusBadge() {
   if (window.pywebview && window.pywebview.api && window.pywebview.api.get_ai_status) {
     window.pywebview.api.get_ai_status().then(st => {
       document.getElementById('ai-provider').value = st.provider || 'gemini';
-      document.getElementById('ai-model').value = st.model || 'gemini-2.5-flash';
+      document.getElementById('ai-model').value = st.model || 'gemini-3.8-flash';
       document.getElementById('ai-base-url').value = st.base_url || 'http://localhost:11434';
       document.getElementById('ai-key-row').style.display = (st.provider === 'ollama') ? 'none' : 'block';
       document.getElementById('ai-url-row').style.display = (st.provider === 'ollama') ? 'block' : 'none';
       const sub = document.getElementById('ai-status-sub');
       if (st.configured) {
-        sub.textContent = `✓ Connected: ${st.provider.toUpperCase()} (${st.model})`;
+        sub.textContent = `✓ Connected: ${st.provider.toUpperCase()} (${st.model}) • Scoped to App & Jazz`;
         sub.style.color = '#34d399';
       } else {
-        sub.textContent = 'Local Analyzer Active • Add API key in ⚙ AI Setup for full chat';
-        sub.style.color = '#fbbf24';
+        sub.textContent = '✓ Built-in App Help & Theory Coach Active (Optional API key in ⚙ AI Setup)';
+        sub.style.color = '#38bdf8';
       }
     }).catch(() => {});
   }
@@ -3030,12 +3037,18 @@ window.saveAiSettings = function() {
 
 window.askQuickQuestion = function(kind) {
   const labels = {
+    help: 'How do I use the program UI, Live Auto-Judge, Calibration, and 12-Key Circle features?',
     chord: 'Analyze the current chord voicing, Drop structure, and degrees.',
     guide: 'Show the b7 → 3 Guide-Tone resolution strings and frets in this key.',
     tip: 'Give me a fretting-hand and picking articulation tip for this drill.',
     next: 'Based on my progress, what should I focus on next?'
   };
-  const q = labels[kind];
+  const q = labels[kind] || labels.help;
+  if (kind === 'help' && window.pywebview && window.pywebview.api && window.pywebview.api.ask_ai_coach) {
+    document.getElementById('ai-input').value = q;
+    sendAiQuestion();
+    return;
+  }
   if (window.pywebview && window.pywebview.api && window.pywebview.api.get_ai_status) {
     window.pywebview.api.get_ai_status().then(st => {
       if (st.configured) {

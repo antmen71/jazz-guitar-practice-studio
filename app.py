@@ -10,6 +10,11 @@ from pathlib import Path
 import requests
 
 from audio_judge import GuitarAudioJudge
+from coach_assistant import (
+    answer_offline_coach,
+    build_strict_system_prompt,
+    check_off_topic_guardrail,
+)
 
 APP_VERSION = "1.0.0"
 IS_FROZEN = bool(getattr(sys, "frozen", False))
@@ -224,38 +229,25 @@ class StudioApi:
     def ask_ai_coach(self, question: str, studio_context: dict, history: list) -> dict:
         question = (question or "").strip()
         if not question:
-            return {"ok": False, "answer": "Lütfen bir soru yazın."}
+            return {"ok": False, "answer": "Please enter a question."}
 
         cfg = self._load_ai_config_raw()
         provider = cfg.get("provider", "gemini")
         api_key = cfg.get("api_key", "")
         model = cfg.get("model", "gemini-2.5-flash")
 
-        ctx_lines = []
-        if isinstance(studio_context, dict):
-            for k, v in studio_context.items():
-                ctx_lines.append(f"- {k}: {v}")
-        ctx_block = "\n".join(ctx_lines)
-
-        system_prompt = (
-            "You are a master Jazz Guitar instructor (Berklee / Jody Fisher / Randy Vincent Drop-2 & Drop-3 pedagogy) "
-            "coaching an experienced guitarist (40 years of playing). Reply in the same language the user writes their question in, "
-            "while ALWAYS using standard English jazz guitar terminology (Drop-2, Drop-3, Root Position, 1st/2nd/3rd Inversion, "
-            "Guide Tones, Shell Voicing, Voice Leading, Chorus, Turnaround, Dorian, Mixolydian, Lydian #4). "
-            "Keep answers concise, practical, and directly tied to string/fret/finger locations.\n\n"
-            f"LIVE STUDIO STATE ON THE USER'S SCREEN:\n{ctx_block}"
-        )
-
+        # When no API key is configured, answer using the built-in Offline App Help & Theory Assistant!
         if provider in ("gemini", "openai") and not api_key:
-            return {
-                "ok": False,
-                "needs_key": True,
-                "answer": (
-                    "No API key configured yet for live AI chat. "
-                    "Click **⚙ AI Setup** in the top-right of this panel to add a free **Google Gemini API Key** "
-                    "(or OpenAI / local Ollama)."
-                ),
-            }
+            return answer_offline_coach(question, studio_context if isinstance(studio_context, dict) else {})
+
+        # When API key (or Ollama) IS active, enforce strict off-topic / prompt-injection guardrail!
+        refusal = check_off_topic_guardrail(question)
+        if refusal:
+            return {"ok": True, "answer": refusal}
+
+        system_prompt = build_strict_system_prompt(
+            studio_context if isinstance(studio_context, dict) else {}
+        )
 
         try:
             if provider == "gemini":

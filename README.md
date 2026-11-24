@@ -29,9 +29,9 @@ Download and install directly on **Windows 10 / Windows 11 (64-bit)** from [**Gi
   - Includes 4-beat muted-strum **Latency Calibration (`🎯 Calibrate`)**, **Zero-Penalty Rest Detection**, and instant **Last-Take Playback (`🔊 Replay Take`)**.
 - **🔄 Continuous 12-Key Circle Engine:**
   - Practice in **Single Key Loop** or modulate seamlessly through the **Circle of 4ths**, **Circle of 5ths**, or **Random 12-Key Quiz** by choruses or minutes, with optional 1-bar transition breath & upcoming fret-box preview.
-- **🤖 Context-Aware In-App AI Jazz Coach:**
-  - Inspects your active drill, voicing grip, fret box, key, BPM, and latest Auto-Judge scorecard in real time.
-  - Works offline with instant local chord/guide-tone analysis, or connects to **Google Gemini**, **OpenAI**, or **Local Ollama** (API keys stored locally only).
+- **🤖 Context-Aware In-App AI Jazz Coach & Help Assistant:**
+  - **Works Offline (No API Key Needed):** Answers questions about using every UI panel (`Auto-Judge`, `Calibrate`, `12-Key Circle`, `Shortcuts`, `Blocks`) as well as your live voicings, `b7 → 3` Guide Tones, and modal concepts.
+  - **Strict Domain Scope (With API Key / Ollama):** When connected to **Google Gemini**, **OpenAI**, or **Local Ollama**, responses are strictly scoped to this application, guitar/audio setup, music theory, and jazz improvisation (politely declining off-topic requests).
 
 ---
 

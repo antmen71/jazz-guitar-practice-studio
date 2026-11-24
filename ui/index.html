@@ -455,7 +455,7 @@
         </div>
         <div>
           <label style="font-size:0.75rem;color:var(--text-muted);">Model</label>
-          <input id="ai-model" type="text" class="ai-input-field" value="gemini-2.5-flash" />
+          <input id="ai-model" type="text" class="ai-input-field" value="gemini-3.8-flash" />
         </div>
       </div>
 
@@ -478,6 +478,7 @@
     <div id="ai-messages" class="ai-messages"></div>
 
     <div class="ai-quick-chips">
+      <button class="ai-chip" onclick="askQuickQuestion('help')">❓ App &amp; Auto-Judge Guide</button>
       <button class="ai-chip" onclick="askQuickQuestion('chord')">🎸 Analyze current voicing</button>
       <button class="ai-chip" onclick="askQuickQuestion('guide')">🎯 Show b7 → 3 resolution</button>
       <button class="ai-chip" onclick="askQuickQuestion('tip')">🖐 Fingering &amp; picking tip</button>
@@ -485,7 +486,7 @@
     </div>
 
     <div class="ai-composer">
-      <textarea id="ai-input" class="ai-textarea" placeholder="Ask in English or Turkish about voicings, guide tones, Drop-2/Drop-3, or practice plan... (Enter = Send)"></textarea>
+      <textarea id="ai-input" class="ai-textarea" placeholder="Ask about app controls (Auto-Judge, Circle, Shortcuts), guitar setup, or jazz theory... (Enter = Send)"></textarea>
       <button id="btn-ai-send" class="btn-clean" style="padding:0 0.9rem;" onclick="sendAiQuestion()">Send</button>
     </div>
   </aside>
