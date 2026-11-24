@@ -11,9 +11,23 @@ import requests
 
 from audio_judge import GuitarAudioJudge
 
-BASE_DIR = Path(__file__).resolve().parent
-UI_ENTRY = BASE_DIR / "ui" / "index.html"
-DATA_DIR = BASE_DIR / "data"
+APP_VERSION = "1.0.0"
+IS_FROZEN = bool(getattr(sys, "frozen", False))
+RESOURCE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+EXE_DIR = Path(sys.executable).resolve().parent if IS_FROZEN else Path(__file__).resolve().parent
+
+if IS_FROZEN:
+    if (EXE_DIR / "portable.txt").exists() or "--portable" in sys.argv:
+        DATA_DIR = EXE_DIR / "data"
+    else:
+        local_appdata = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
+        DATA_DIR = local_appdata / "JazzGuitarPracticeStudio" / "data"
+else:
+    DATA_DIR = EXE_DIR / "data"
+
+BASE_DIR = EXE_DIR
+UI_ENTRY = RESOURCE_DIR / "ui" / "index.html"
+ICON_FILE = RESOURCE_DIR / "assets" / "studio_icon.ico"
 STATE_FILE = DATA_DIR / "progress.json"
 AI_CONFIG_FILE = DATA_DIR / "ai_config.json"
 LOG_FILE = DATA_DIR / "app.log"
@@ -30,6 +44,12 @@ def ensure_stdio_for_pythonw() -> None:
 def enable_windows_hidpi() -> None:
     if sys.platform != "win32":
         return
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            "AntmenStudio.JazzGuitarPracticeStudio.1"
+        )
+    except Exception:
+        pass
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(2)
     except Exception:
@@ -455,16 +475,17 @@ def main() -> int:
         finally:
             window.destroy()
 
+    icon_arg = str(ICON_FILE) if ICON_FILE.exists() else None
     try:
         if smoke_test:
-            webview.start(run_smoke_check, gui="edgechromium")
+            webview.start(run_smoke_check, gui="edgechromium", icon=icon_arg)
             if not smoke_result["ok"]:
                 print(f"SMOKE_TEST_FAILED: {smoke_result['error']}", file=sys.stderr)
                 return 1
             print("SMOKE_TEST_PASSED")
             return 0
 
-        webview.start(gui="edgechromium")
+        webview.start(gui="edgechromium", icon=icon_arg)
         return 0
     finally:
         api.shutdown()

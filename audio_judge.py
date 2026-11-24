@@ -4,7 +4,6 @@ import time
 from typing import Any
 
 import numpy as np
-from scipy.signal import butter, sosfilt
 import sounddevice as sd
 
 
@@ -48,14 +47,36 @@ class GuitarAudioJudge:
 
         self._last_take: np.ndarray | None = None
         self._last_take_sr: int = 44100
-        self._sos_bp = self._design_bandpass(self._sr)
 
     @staticmethod
-    def _design_bandpass(sr: int):
-        nyq = 0.5 * sr
-        low = max(65.0 / nyq, 0.002)
-        high = min(1500.0 / nyq, 0.95)
-        return butter(3, [low, high], btype="bandpass", output="sos")
+    def _bandpass_guitar(wav_raw: np.ndarray, sr: int, low_hz: float = 65.0, high_hz: float = 1500.0) -> np.ndarray:
+        """Zero-phase tapered FFT bandpass (65–1500 Hz) in pure NumPy — fast & zero SciPy bloat."""
+        n = len(wav_raw)
+        if n < 32:
+            return wav_raw.astype(np.float32)
+        spec = np.fft.rfft(wav_raw.astype(np.float64))
+        freqs = np.fft.rfftfreq(n, d=1.0 / sr)
+        mask = np.ones_like(freqs)
+
+        # Smooth cosine high-pass taper 35..65 Hz
+        hp_lo = low_hz * 0.55
+        below = freqs < hp_lo
+        hp_trans = (freqs >= hp_lo) & (freqs < low_hz)
+        mask[below] = 0.0
+        if np.any(hp_trans):
+            phase = (freqs[hp_trans] - hp_lo) / max(1e-6, low_hz - hp_lo)
+            mask[hp_trans] = 0.5 * (1.0 - np.cos(np.pi * phase))
+
+        # Smooth cosine low-pass taper 1500..2200 Hz
+        lp_hi = min(0.49 * sr, high_hz * 1.45)
+        above = freqs > lp_hi
+        lp_trans = (freqs > high_hz) & (freqs <= lp_hi)
+        mask[above] = 0.0
+        if np.any(lp_trans):
+            phase = (freqs[lp_trans] - high_hz) / max(1e-6, lp_hi - high_hz)
+            mask[lp_trans] = 0.5 * (1.0 + np.cos(np.pi * phase))
+
+        return np.fft.irfft(spec * mask, n=n).astype(np.float32)
 
     def list_input_devices(self) -> list[dict[str, Any]]:
         """Return deduplicated input devices, prioritizing Windows WASAPI for low latency."""
@@ -143,7 +164,6 @@ class GuitarAudioJudge:
             self._write_pos = 0
             self._total_written = 0
             self._last_cb_perf = time.perf_counter()
-            self._sos_bp = self._design_bandpass(sr)
 
         def _audio_callback(indata: np.ndarray, frames: int, time_info, status) -> None:
             now_perf = time.perf_counter()
@@ -454,7 +474,7 @@ class GuitarAudioJudge:
         if len(wav_raw) < int(sr * 0.5):
             return {"ok": False, "status": "idle", "score": 0, "summary": "Buffer warming up..."}
 
-        wav = sosfilt(self._design_bandpass(sr), wav_raw).astype(np.float32)
+        wav = self._bandpass_guitar(wav_raw, sr)
 
         # Compute 8 ms frame RMS envelope & adaptive noise floor
         hop = max(1, int(sr * 0.008))

@@ -1,8 +1,17 @@
 # Jazz Guitar Practice Studio
 
-A native Windows desktop practice studio (`pywebview` + Web Audio + real-time Python WASAPI DSP) built around the **Berklee / Jody Fisher / Randy Vincent Guide-Tone (`b7 → 3`)** jazz guitar methodology.
+A native Windows desktop practice studio (`WebView2` + Web Audio + real-time WASAPI DSP) built around the **Berklee / Jody Fisher / Randy Vincent Guide-Tone (`b7 → 3`)** jazz guitar methodology.
 
 Designed for serious daily jazz guitar workouts across all **12 keys**, combining **Drop-3 & Pure Drop-2 voicings**, **in-position voice-led 7th arpeggios**, **Dorian / Mixolydian / Lydian `#4` modal phrasing**, **live trio improvisation**, a **Real-Time Guitar Audio Judge**, and a **Context-Aware AI Jazz Coach**.
+
+---
+
+## ⬇️ Download for Windows (No Python Required)
+
+Download and install directly on **Windows 10 / Windows 11 (64-bit)** from [**GitHub Releases**](https://github.com/antmen71/jazz-guitar-practice-studio/releases/latest):
+
+- 💿 **[JazzGuitarPracticeStudio_Setup_v1.0.0.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.0.0/JazzGuitarPracticeStudio_Setup_v1.0.0.exe)** — **Recommended Windows Installer** (creates Start Menu & optional Desktop shortcuts, English & Turkish setup wizard, clean uninstaller; stores user progress safely in `%LOCALAPPDATA%\JazzGuitarPracticeStudio`).
+- 📦 **[JazzGuitarPracticeStudio_Portable_v1.0.0_win64.zip](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.0.0/JazzGuitarPracticeStudio_Portable_v1.0.0_win64.zip)** — **Portable Edition** (extract anywhere and run `JazzGuitarStudio.exe`; stores data inside `.\data\`).
 
 ---
 
@@ -22,27 +31,7 @@ Designed for serious daily jazz guitar workouts across all **12 keys**, combinin
   - Practice in **Single Key Loop** or modulate seamlessly through the **Circle of 4ths**, **Circle of 5ths**, or **Random 12-Key Quiz** by choruses or minutes, with optional 1-bar transition breath & upcoming fret-box preview.
 - **🤖 Context-Aware In-App AI Jazz Coach:**
   - Inspects your active drill, voicing grip, fret box, key, BPM, and latest Auto-Judge scorecard in real time.
-  - Works offline with instant local chord/guide-tone analysis, or connects to **Google Gemini**, **OpenAI**, or **Local Ollama** (API keys stored locally only in ignored `data/ai_config.json`).
-
----
-
-## Installation & Launch (Windows)
-
-### 1. Install Dependencies
-```powershell
-pip install -r requirements.txt
-```
-
-### 2. Run the Studio
-```powershell
-python app.py
-```
-Or double-click **`CazGitarKocu.vbs`** (zero-console native desktop launch).
-
-### 3. Smoke Test (Optional)
-```powershell
-python app.py --smoke-test
-```
+  - Works offline with instant local chord/guide-tone analysis, or connects to **Google Gemini**, **OpenAI**, or **Local Ollama** (API keys stored locally only).
 
 ---
 
@@ -65,5 +54,18 @@ python app.py --smoke-test
 
 ---
 
+## Run or Build from Source (Developers)
+
+```powershell
+# Run from Python source
+pip install -r requirements.txt
+python app.py
+
+# Build standalone EXE + Windows Setup.exe + Portable ZIP
+powershell -ExecutionPolicy Bypass -File .\build_installer.ps1
+```
+
+---
+
 ## Privacy & Local Data
-All personal practice progress (`data/progress.json`) and optional AI provider credentials (`data/ai_config.json`) are stored strictly on your local disk and excluded via `.gitignore`.
+All personal practice progress (`progress.json`) and optional AI provider credentials (`ai_config.json`) are stored strictly on your local disk (`%LOCALAPPDATA%\JazzGuitarPracticeStudio\data` when installed) and excluded via `.gitignore`.
