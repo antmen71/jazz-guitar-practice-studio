@@ -5,18 +5,18 @@ const STRING_LABELS = { 1: '1e', 2: '2B', 3: '3G', 4: '4D', 5: '5A', 6: '6E' };
 
 // 12 Keys ordered in Circle of Fourths
 const KEYS = [
-  { id: 'C',  pc: 0,  sharp: true,  slide: { shape: 'A', r: 8  }, zone: { shape: 'A', r: 8  }, ii: 'Dm7',  iiB: 'Dm9',  V: 'G9',  VB: 'G13',  V7: 'G7',  I: 'CMaj7',  IB: 'CMaj9' },
-  { id: 'F',  pc: 5,  sharp: false, slide: { shape: 'A', r: 1  }, zone: { shape: 'B', r: 8  }, ii: 'Gm7',  iiB: 'Gm9',  V: 'C9',  VB: 'C13',  V7: 'C7',  I: 'FMaj7',  IB: 'FMaj9' },
-  { id: 'Bb', pc: 10, sharp: false, slide: { shape: 'A', r: 6  }, zone: { shape: 'A', r: 6  }, ii: 'Cm7',  iiB: 'Cm9',  V: 'F9',  VB: 'F13',  V7: 'F7',  I: 'BbMaj7', IB: 'BbMaj9' },
-  { id: 'Eb', pc: 3,  sharp: false, slide: { shape: 'A', r: 11 }, zone: { shape: 'B', r: 6  }, ii: 'Fm7',  iiB: 'Fm9',  V: 'Bb9', VB: 'Bb13', V7: 'Bb7', I: 'EbMaj7', IB: 'EbMaj9' },
-  { id: 'Ab', pc: 8,  sharp: false, slide: { shape: 'A', r: 4  }, zone: { shape: 'A', r: 4  }, ii: 'Bbm7', iiB: 'Bbm9', V: 'Eb9', VB: 'Eb13', V7: 'Eb7', I: 'AbMaj7', IB: 'AbMaj9' },
-  { id: 'Db', pc: 1,  sharp: false, slide: { shape: 'A', r: 9  }, zone: { shape: 'B', r: 4  }, ii: 'Ebm7', iiB: 'Ebm9', V: 'Ab9', VB: 'Ab13', V7: 'Ab7', I: 'DbMaj7', IB: 'DbMaj9' },
-  { id: 'Gb', pc: 6,  sharp: false, slide: { shape: 'A', r: 2  }, zone: { shape: 'B', r: 9  }, ii: 'Abm7', iiB: 'Abm9', V: 'Db9', VB: 'Db13', V7: 'Db7', I: 'GbMaj7', IB: 'GbMaj9' },
-  { id: 'B',  pc: 11, sharp: true,  slide: { shape: 'A', r: 7  }, zone: { shape: 'A', r: 7  }, ii: 'C#m7', iiB: 'C#m9', V: 'F#9', VB: 'F#13', V7: 'F#7', I: 'BMaj7',  IB: 'BMaj9' },
-  { id: 'E',  pc: 4,  sharp: true,  slide: { shape: 'A', r: 0  }, zone: { shape: 'B', r: 7  }, ii: 'F#m7', iiB: 'F#m9', V: 'B9',  VB: 'B13',  V7: 'B7',  I: 'EMaj7',  IB: 'EMaj9' },
-  { id: 'A',  pc: 9,  sharp: true,  slide: { shape: 'A', r: 5  }, zone: { shape: 'A', r: 5  }, ii: 'Bm7',  iiB: 'Bm9',  V: 'E9',  VB: 'E13',  V7: 'E7',  I: 'AMaj7',  IB: 'AMaj9' },
-  { id: 'D',  pc: 2,  sharp: true,  slide: { shape: 'A', r: 10 }, zone: { shape: 'B', r: 5  }, ii: 'Em7',  iiB: 'Em9',  V: 'A9',  VB: 'A13',  V7: 'A7',  I: 'DMaj7',  IB: 'DMaj9' },
-  { id: 'G',  pc: 7,  sharp: true,  slide: { shape: 'A', r: 3  }, zone: { shape: 'A', r: 3  }, ii: 'Am7',  iiB: 'Am9',  V: 'D9',  VB: 'D13',  V7: 'D7',  I: 'GMaj7',  IB: 'GMaj9' }
+  { id: 'C',  pc: 0,  sharp: true,  slide: { shape: 'A', r: 8  }, zone: { shape: 'A', r: 8  }, lowZone: { shape: 'B', r: 3 }, ii: 'Dm7',  iiB: 'Dm9',  V: 'G9',  VB: 'G13',  V7: 'G7',  I: 'CMaj7',  IB: 'CMaj9' },
+  { id: 'F',  pc: 5,  sharp: false, slide: { shape: 'A', r: 1  }, zone: { shape: 'B', r: 8  }, lowZone: { shape: 'A', r: 1 }, ii: 'Gm7',  iiB: 'Gm9',  V: 'C9',  VB: 'C13',  V7: 'C7',  I: 'FMaj7',  IB: 'FMaj9' },
+  { id: 'Bb', pc: 10, sharp: false, slide: { shape: 'A', r: 6  }, zone: { shape: 'A', r: 6  }, lowZone: { shape: 'B', r: 1 }, ii: 'Cm7',  iiB: 'Cm9',  V: 'F9',  VB: 'F13',  V7: 'F7',  I: 'BbMaj7', IB: 'BbMaj9' },
+  { id: 'Eb', pc: 3,  sharp: false, slide: { shape: 'A', r: 11 }, zone: { shape: 'B', r: 6  }, lowZone: { shape: 'B', r: 6 }, ii: 'Fm7',  iiB: 'Fm9',  V: 'Bb9', VB: 'Bb13', V7: 'Bb7', I: 'EbMaj7', IB: 'EbMaj9' },
+  { id: 'Ab', pc: 8,  sharp: false, slide: { shape: 'A', r: 4  }, zone: { shape: 'A', r: 4  }, lowZone: { shape: 'A', r: 4 }, ii: 'Bbm7', iiB: 'Bbm9', V: 'Eb9', VB: 'Eb13', V7: 'Eb7', I: 'AbMaj7', IB: 'AbMaj9' },
+  { id: 'Db', pc: 1,  sharp: false, slide: { shape: 'A', r: 9  }, zone: { shape: 'B', r: 4  }, lowZone: { shape: 'B', r: 4 }, ii: 'Ebm7', iiB: 'Ebm9', V: 'Ab9', VB: 'Ab13', V7: 'Ab7', I: 'DbMaj7', IB: 'DbMaj9' },
+  { id: 'Gb', pc: 6,  sharp: false, slide: { shape: 'A', r: 2  }, zone: { shape: 'B', r: 9  }, lowZone: { shape: 'A', r: 2 }, ii: 'Abm7', iiB: 'Abm9', V: 'Db9', VB: 'Db13', V7: 'Db7', I: 'GbMaj7', IB: 'GbMaj9' },
+  { id: 'B',  pc: 11, sharp: true,  slide: { shape: 'A', r: 7  }, zone: { shape: 'A', r: 7  }, lowZone: { shape: 'B', r: 2 }, ii: 'C#m7', iiB: 'C#m9', V: 'F#9', VB: 'F#13', V7: 'F#7', I: 'BMaj7',  IB: 'BMaj9' },
+  { id: 'E',  pc: 4,  sharp: true,  slide: { shape: 'A', r: 0  }, zone: { shape: 'B', r: 7  }, lowZone: { shape: 'A', r: 0 }, ii: 'F#m7', iiB: 'F#m9', V: 'B9',  VB: 'B13',  V7: 'B7',  I: 'EMaj7',  IB: 'EMaj9' },
+  { id: 'A',  pc: 9,  sharp: true,  slide: { shape: 'A', r: 5  }, zone: { shape: 'A', r: 5  }, lowZone: { shape: 'A', r: 5 }, ii: 'Bm7',  iiB: 'Bm9',  V: 'E9',  VB: 'E13',  V7: 'E7',  I: 'AMaj7',  IB: 'AMaj9' },
+  { id: 'D',  pc: 2,  sharp: true,  slide: { shape: 'A', r: 10 }, zone: { shape: 'B', r: 5  }, lowZone: { shape: 'B', r: 5 }, ii: 'Em7',  iiB: 'Em9',  V: 'A9',  VB: 'A13',  V7: 'A7',  I: 'DMaj7',  IB: 'DMaj9' },
+  { id: 'G',  pc: 7,  sharp: true,  slide: { shape: 'A', r: 3  }, zone: { shape: 'A', r: 3  }, lowZone: { shape: 'A', r: 3 }, ii: 'Am7',  iiB: 'Am9',  V: 'D9',  VB: 'D13',  V7: 'D7',  I: 'GMaj7',  IB: 'GMaj9' }
 ];
 
 // 8-Module Master Jazz Guitar Curriculum
@@ -428,20 +428,30 @@ function getBlockObj() {
   return arr.find(b => b.id === activeBlockId) || arr[0];
 }
 
-// Unified Layout Resolver across Modules 1, 2, 3, 4!
+// Unified Layout Resolver across Modules 1, 2, 3, 4 & Both Neck Strategies!
 function getKeyLayout(keyObj) {
   if (activeModuleId === 'm2') {
-    // Module 2: Pure 5-4-3-2 Drop-2 anchored at 5th-string I root r5 in [0..11]
     const r5 = ((keyObj.pc - 9) + 12) % 12;
+    if (posMode === 'zone') {
+      // Stay in Central Zone (Frets 2–12): alternate Root/2nd (D2_5) & 2nd/Root (D2_5_INV) on 5-4-3-2!
+      if (r5 >= 3 && r5 <= 7) return { shape: 'D2_5', r: r5 };
+      const u5 = (keyObj.pc + 10) % 12;
+      return { shape: 'D2_5_INV', r: u5 };
+    }
     return { shape: 'D2_5', r: r5 };
   }
   if (activeModuleId === 'm3') {
-    // Module 3: Pure 4-3-2-1 Drop-2 anchored at 4th-string V root u4 in [0..11]
     const u4 = (keyObj.pc + 5) % 12;
+    if (posMode === 'zone') {
+      // Stay in Central Zone (Frets 2–11): alternate 2nd/Root (D2_4) & Root/2nd (D2_4_INV) on 4-3-2-1!
+      if (u4 >= 3 && u4 <= 8) return { shape: 'D2_4', r: u4 };
+      const w4 = (keyObj.pc + 10) % 12;
+      return { shape: 'D2_4_INV', r: w4 };
+    }
     return { shape: 'D2_4', r: u4 };
   }
   if (activeModuleId === 'm4') {
-    return keyObj.zone;
+    return posMode === 'slide' ? keyObj.lowZone : keyObj.zone;
   }
   return posMode === 'zone' ? keyObj.zone : keyObj.slide;
 }
@@ -452,8 +462,14 @@ function getBoxBounds(layout) {
     if (layout.r === 0) return { min: 0, max: 4 };
     return { min: Math.max(0, layout.r - 1), max: layout.r + 2 };
   }
+  if (layout.shape === 'D2_5_INV') {
+    return { min: Math.max(0, layout.r - 1), max: layout.r + 3 };
+  }
   if (layout.shape === 'D2_4') {
     return { min: layout.r, max: layout.r + 3 };
+  }
+  if (layout.shape === 'D2_4_INV') {
+    return { min: layout.r, max: layout.r + 4 };
   }
   if (layout.r === 0) {
     return { min: 0, max: activeBlockId === 'b1' ? 2 : 4 };
@@ -466,26 +482,30 @@ function getBoxBounds(layout) {
 
 function getShapeBadgeLabel(layout, keyObj) {
   if (activeBlockId !== 'b1') {
-    if (layout.shape === 'D2_5') return `5th-STR ROOT BOX • ${keyObj.id} Major`;
-    if (layout.shape === 'D2_4') return `TOP 4-STR (4-3-2-1) BOX • ${keyObj.id} Major`;
-    if (layout.shape === 'B') return `CENTRAL ZONE (5th-Str Box) • ${keyObj.id} Major`;
+    if (layout.shape === 'D2_5' || layout.shape === 'D2_5_INV') return `5th-STR DROP-2 BOX • ${keyObj.id} Major`;
+    if (layout.shape === 'D2_4' || layout.shape === 'D2_4_INV') return `TOP 4-STR (4-3-2-1) BOX • ${keyObj.id} Major`;
+    if (layout.shape === 'B') return `5th-STR ZONE BOX • ${keyObj.id} Major`;
     return `6th-STR ROOT BOX • ${keyObj.id} Major`;
   }
-  if (layout.shape === 'D2_5') return `PURE DROP-2 (5-4-3-2) • ${keyObj.id} Major`;
-  if (layout.shape === 'D2_4') return `PURE DROP-2 (4-3-2-1) • ${keyObj.id} Major`;
+  if (layout.shape === 'D2_5') return `PURE DROP-2 (5-4-3-2 Root/2nd) • ${keyObj.id} Major`;
+  if (layout.shape === 'D2_5_INV') return `PURE DROP-2 (5-4-3-2 2nd/Root) • ${keyObj.id} Major`;
+  if (layout.shape === 'D2_4') return `PURE DROP-2 (4-3-2-1 2nd/Root) • ${keyObj.id} Major`;
+  if (layout.shape === 'D2_4_INV') return `PURE DROP-2 (4-3-2-1 Root/2nd) • ${keyObj.id} Major`;
   if (layout.shape === 'B') return `FORM B • 5th-Str Root (${keyObj.id} Major)`;
   return `FORM A • 6th-Str Drop-3 (${keyObj.id} Major)`;
 }
 
 function getShortShapeCode(layout) {
   if (activeBlockId !== 'b1') {
-    if (layout.shape === 'D2_5') return '5thStr';
-    if (layout.shape === 'D2_4') return 'Top4';
+    if (layout.shape === 'D2_5' || layout.shape === 'D2_5_INV') return '5thStr';
+    if (layout.shape === 'D2_4' || layout.shape === 'D2_4_INV') return 'Top4';
     if (layout.shape === 'B') return '5thStr';
     return '6thStr';
   }
-  if (layout.shape === 'D2_5') return 'D2·5S';
-  if (layout.shape === 'D2_4') return 'D2·4S';
+  if (layout.shape === 'D2_5') return 'D2·5A';
+  if (layout.shape === 'D2_5_INV') return 'D2·5B';
+  if (layout.shape === 'D2_4') return 'D2·4A';
+  if (layout.shape === 'D2_4_INV') return 'D2·4B';
   return layout.shape;
 }
 
@@ -711,6 +731,80 @@ function getVoicingsForKey(keyObj) {
     };
   }
 
+  if (layout.shape === 'D2_5_INV') {
+    // Module 2 Central-Zone Alternate: Pure 5-4-3-2 Drop-2 (2nd Inv ii7 -> Root V7 -> 2nd Inv IMaj7)
+    return {
+      shape: 'D2_5_INV',
+      iiName: keyObj.ii,
+      VName: keyObj.V7,
+      IName: keyObj.I,
+      ii: {
+        shapeText: `x - ${r+2} - ${r+2} - ${r} - ${r+3} - x`,
+        notes: [
+          mk(5, r + 2, 2, '5',  false),
+          mk(4, r + 2, 3, '1',  false),
+          mk(3, r,     1, 'b3', true),
+          mk(2, r + 3, 4, 'b7', true)
+        ]
+      },
+      V: {
+        shapeText: `x - ${r} - ${r+2} - ${r} - ${r+2} - x`,
+        notes: [
+          mk(5, r,     1, '1',  false),
+          mk(4, r + 2, 3, '5',  false),
+          mk(3, r,     1, 'b7', true),
+          mk(2, r + 2, 4, '3',  true)
+        ]
+      },
+      I: {
+        shapeText: `x - ${r} - ${r} - ${r-1} - ${r+2} - x`,
+        notes: [
+          mk(5, r,     2, '5', false),
+          mk(4, r,     3, '1', false),
+          mk(3, r - 1, 1, '3', true),
+          mk(2, r + 2, 4, '7', true)
+        ]
+      }
+    };
+  }
+
+  if (layout.shape === 'D2_4_INV') {
+    // Module 3 Central-Zone Alternate: Pure 4-3-2-1 Drop-2 (Root ii7 -> 2nd Inv V7 -> Root IMaj7)
+    return {
+      shape: 'D2_4_INV',
+      iiName: keyObj.ii,
+      VName: keyObj.V7,
+      IName: keyObj.I,
+      ii: {
+        shapeText: `x - x - ${r+2} - ${r+4} - ${r+3} - ${r+3}`,
+        notes: [
+          mk(4, r + 2, 1, '1',  false),
+          mk(3, r + 4, 4, '5',  false),
+          mk(2, r + 3, 2, 'b7', true),
+          mk(1, r + 3, 3, 'b3', true)
+        ]
+      },
+      V: {
+        shapeText: `x - x - ${r+2} - ${r+2} - ${r+2} - ${r+3}`,
+        notes: [
+          mk(4, r + 2, 1, '5',  false),
+          mk(3, r + 2, 1, '1',  false),
+          mk(2, r + 2, 1, '3',  true),
+          mk(1, r + 3, 2, 'b7', true)
+        ]
+      },
+      I: {
+        shapeText: `x - x - ${r} - ${r+2} - ${r+2} - ${r+2}`,
+        notes: [
+          mk(4, r,     1, '1', false),
+          mk(3, r + 2, 3, '5', false),
+          mk(2, r + 2, 3, '7', true),
+          mk(1, r + 2, 3, '3', true)
+        ]
+      }
+    };
+  }
+
   if (layout.shape === 'D2_4') {
     // Module 3: Pure 4-3-2-1 Drop-2 (2nd Inv ii7 -> Root V7 -> 2nd Inv IMaj7)
     return {
@@ -831,7 +925,7 @@ function getBoxMapForBar(keyObj, barIdx) {
   const sharp = keyObj.sharp;
   const map = new Map();
   const useLydian = (activeBlockId === 'b3' || activeBlockId === 'b4');
-  const maxString = layout.shape === 'D2_4' ? 4 : 6;
+  const maxString = (layout.shape === 'D2_4' || layout.shape === 'D2_4_INV') ? 4 : 6;
 
   for (let s = 1; s <= maxString; s++) {
     for (let f = bounds.min; f <= bounds.max; f++) {
@@ -938,6 +1032,78 @@ function buildEventsForKey(keyObj) {
 
   // --- BLOCK 2: 7th ARPEGGIOS ---
   if (activeBlockId === 'b2') {
+    if (layout.shape === 'D2_5_INV') {
+      const w = r;
+      return [
+        mkSingle(0,  1, 0, 4, w+2, 3, '1'),
+        mkSingle(1,  1, 0, 3, w,   2, 'b3'),
+        mkSingle(2,  1, 0, 2, w,   2, '5'),
+        mkSingle(3,  1, 0, 2, w+3, 4, 'b7'),
+        mkSingle(4,  1, 0, 1, w,   2, '1'),
+        mkSingle(5,  1, 0, 1, w+3, 4, 'b3'),
+        mkSingle(6,  1, 0, 2, w,   2, '5'),
+        mkSingle(7,  1, 0, 2, w+3, 4, 'b7'),
+
+        mkSingle(8,  1, 1, 2, w+2, 3, '3', '★ Half-Step Resolution!'),
+        mkSingle(9,  1, 1, 1, w,   2, '5'),
+        mkSingle(10, 1, 1, 1, w+3, 4, 'b7'),
+        mkSingle(11, 1, 1, 2, w+2, 3, '3'),
+        mkSingle(12, 1, 1, 3, w+2, 3, '1'),
+        mkSingle(13, 1, 1, 4, w+2, 3, '5'),
+        mkSingle(14, 1, 1, 5, w,   2, '1'),
+        mkSingle(15, 1, 1, 3, w,   2, 'b7'),
+
+        mkSingle(16, 1, 2, 3, w-1, 1, '3', '★ Half-Step Resolution!'),
+        mkSingle(17, 1, 2, 3, w+2, 3, '5'),
+        mkSingle(18, 1, 2, 2, w+2, 3, '7'),
+        mkSingle(19, 1, 2, 2, w+3, 4, '1'),
+        mkSingle(20, 1, 2, 1, w+2, 3, '3'),
+        mkSingle(21, 1, 2, 2, w+2, 3, '7'),
+        mkSingle(22, 1, 2, 3, w+2, 3, '5'),
+        mkSingle(23, 1, 2, 4, w,   2, '1'),
+
+        mkSingle(24, 1, 3, 4, w-1, 1, '7'),
+        mkSingle(25, 1, 3, 5, w,   2, '5'),
+        mkSingle(26, 4, 3, 3, w-1, 1, '3', 'Target Note (2 Beats)')
+      ];
+    }
+
+    if (layout.shape === 'D2_4_INV') {
+      const w = r;
+      return [
+        mkSingle(0,  1, 0, 4, w+2, 2, '1'),
+        mkSingle(1,  1, 0, 3, w,   1, 'b3'),
+        mkSingle(2,  1, 0, 3, w+4, 4, '5'),
+        mkSingle(3,  1, 0, 2, w+3, 3, 'b7'),
+        mkSingle(4,  1, 0, 1, w,   1, '1'),
+        mkSingle(5,  1, 0, 1, w+3, 3, 'b3'),
+        mkSingle(6,  1, 0, 2, w,   1, '5'),
+        mkSingle(7,  1, 0, 2, w+3, 3, 'b7'),
+
+        mkSingle(8,  1, 1, 2, w+2, 2, '3', '★ Half-Step Resolution!'),
+        mkSingle(9,  1, 1, 1, w,   1, '5'),
+        mkSingle(10, 1, 1, 1, w+3, 3, 'b7'),
+        mkSingle(11, 1, 1, 2, w+2, 2, '3'),
+        mkSingle(12, 1, 1, 3, w+2, 2, '1'),
+        mkSingle(13, 1, 1, 4, w+2, 2, '5'),
+        mkSingle(14, 1, 1, 3, w+2, 2, '1'),
+        mkSingle(15, 1, 1, 1, w+3, 3, 'b7'),
+
+        mkSingle(16, 1, 2, 1, w+2, 2, '3', '★ Half-Step Resolution!'),
+        mkSingle(17, 1, 2, 2, w+3, 3, '1'),
+        mkSingle(18, 1, 2, 2, w+2, 2, '7'),
+        mkSingle(19, 1, 2, 3, w+2, 2, '5'),
+        mkSingle(20, 1, 2, 4, w,   1, '1'),
+        mkSingle(21, 1, 2, 3, w+2, 2, '5'),
+        mkSingle(22, 1, 2, 2, w+2, 2, '7'),
+        mkSingle(23, 1, 2, 1, w+2, 2, '3'),
+
+        mkSingle(24, 1, 3, 2, w+2, 2, '7'),
+        mkSingle(25, 1, 3, 3, w+2, 2, '5'),
+        mkSingle(26, 4, 3, 1, w+2, 2, '3', 'Target Note (2 Beats)')
+      ];
+    }
+
     if (layout.shape === 'D2_4') {
       // Module 3 Upper 4 Strings [u .. u+3] Arpeggios
       const u = r;
@@ -1116,6 +1282,78 @@ function buildEventsForKey(keyObj) {
 
   // --- BLOCK 3: MODES & LYDIAN #4 ---
   if (activeBlockId === 'b3') {
+    if (layout.shape === 'D2_5_INV') {
+      const w = r;
+      return [
+        mkSingle(0,  1, 0, 4, w+2, 3, '1'),
+        mkSingle(1,  1, 0, 3, w-1, 1, '9'),
+        mkSingle(2,  1, 0, 3, w,   2, 'b3'),
+        mkSingle(3,  1, 0, 3, w+2, 3, '11'),
+        mkSingle(4,  1, 0, 2, w,   2, '5'),
+        mkSingle(5,  1, 0, 2, w+2, 3, '6', 'Dorian 6'),
+        mkSingle(6,  1, 0, 2, w+3, 4, 'b7'),
+        mkSingle(7,  1, 0, 1, w,   2, '1'),
+
+        mkSingle(8,  1, 1, 1, w+2, 3, '13'),
+        mkSingle(9,  1, 1, 1, w,   2, '5'),
+        mkSingle(10, 1, 1, 2, w+3, 4, '11'),
+        mkSingle(11, 1, 1, 2, w+2, 3, '3'),
+        mkSingle(12, 1, 1, 2, w,   2, '9'),
+        mkSingle(13, 1, 1, 3, w+2, 3, '1'),
+        mkSingle(14, 1, 1, 4, w+2, 3, '5'),
+        mkSingle(15, 1, 1, 3, w,   2, 'b7'),
+
+        mkSingle(16, 1, 2, 3, w-1, 1, '3', '★ Guide Resolution'),
+        mkSingle(17, 1, 2, 3, w+1, 2, '#4', '★ Lydian #4!'),
+        mkSingle(18, 1, 2, 3, w+2, 3, '5'),
+        mkSingle(19, 1, 2, 2, w,   2, '6'),
+        mkSingle(20, 1, 2, 2, w+2, 3, '7'),
+        mkSingle(21, 1, 2, 2, w+3, 4, '1'),
+        mkSingle(22, 1, 2, 1, w,   2, '9'),
+        mkSingle(23, 1, 2, 3, w+1, 2, '#4', '★ Lydian #4!'),
+
+        mkSingle(24, 1, 3, 3, w+2, 3, '5'),
+        mkSingle(25, 1, 3, 3, w-1, 1, '3'),
+        mkSingle(26, 4, 3, 2, w+2, 3, '7', 'Maj7 Color (2 Beats)')
+      ];
+    }
+
+    if (layout.shape === 'D2_4_INV') {
+      const w = r;
+      return [
+        mkSingle(0,  1, 0, 4, w+2, 2, '1'),
+        mkSingle(1,  1, 0, 4, w+4, 4, '9'),
+        mkSingle(2,  1, 0, 3, w,   1, 'b3'),
+        mkSingle(3,  1, 0, 3, w+2, 2, '11'),
+        mkSingle(4,  1, 0, 3, w+4, 4, '5'),
+        mkSingle(5,  1, 0, 2, w+2, 2, '6', 'Dorian 6'),
+        mkSingle(6,  1, 0, 2, w+3, 3, 'b7'),
+        mkSingle(7,  1, 0, 1, w,   1, '1'),
+
+        mkSingle(8,  1, 1, 1, w+2, 2, '13'),
+        mkSingle(9,  1, 1, 1, w,   1, '5'),
+        mkSingle(10, 1, 1, 2, w+3, 3, '11'),
+        mkSingle(11, 1, 1, 2, w+2, 2, '3'),
+        mkSingle(12, 1, 1, 2, w,   1, '9'),
+        mkSingle(13, 1, 1, 3, w+2, 2, '1'),
+        mkSingle(14, 1, 1, 4, w+2, 2, '5'),
+        mkSingle(15, 1, 1, 1, w+3, 3, 'b7'),
+
+        mkSingle(16, 1, 2, 1, w+2, 2, '3', '★ Guide Resolution'),
+        mkSingle(17, 1, 2, 1, w+4, 4, '#4', '★ Lydian #4!'),
+        mkSingle(18, 1, 2, 2, w+3, 3, '1'),
+        mkSingle(19, 1, 2, 2, w+2, 2, '7'),
+        mkSingle(20, 1, 2, 2, w,   1, '6'),
+        mkSingle(21, 1, 2, 3, w+2, 2, '5'),
+        mkSingle(22, 1, 2, 3, w+1, 2, '#4', '★ Lydian #4!'),
+        mkSingle(23, 1, 2, 4, w+4, 4, '3'),
+
+        mkSingle(24, 1, 3, 3, w+2, 2, '5'),
+        mkSingle(25, 1, 3, 1, w+2, 2, '3'),
+        mkSingle(26, 4, 3, 2, w+2, 2, '7', 'Maj7 Color (2 Beats)')
+      ];
+    }
+
     if (layout.shape === 'D2_4') {
       const u = r;
       return [
@@ -1929,7 +2167,35 @@ function renderTopDrillSelect() {
   const curOpt = opts.find(o => o.modId === activeModuleId) || opts[0];
   document.getElementById('header-mod-title').textContent = curOpt.headerTitle;
   document.getElementById('header-mod-sub').textContent = curOpt.headerSub;
-  document.getElementById('pos-strategy-wrap').style.display = (activeModuleId === 'm1') ? 'flex' : 'none';
+
+  // Keep Neck Strategy selector visible across ALL 4 drills with module-specific neck options!
+  const posWrap = document.getElementById('pos-strategy-wrap');
+  const posSel = document.getElementById('select-pos-mode');
+  if (posWrap) posWrap.style.display = 'flex';
+  if (posSel) {
+    const neckOptionsByMod = {
+      m1: [
+        { val: 'slide', txt: 'Slide Single Grip (Drop-3 Form A • Frets 0–13)' },
+        { val: 'zone',  txt: 'Stay in Central Zone (6th/5th-Str Alt • Frets 4–10)' }
+      ],
+      m2: [
+        { val: 'slide', txt: 'Slide Single Grip (5-4-3-2 Root/2nd • Frets 0–11)' },
+        { val: 'zone',  txt: 'Stay in Central Zone (5-4-3-2 Dual Inv • Frets 2–12)' }
+      ],
+      m3: [
+        { val: 'slide', txt: 'Slide Single Grip (4-3-2-1 2nd/Root • Frets 0–11)' },
+        { val: 'zone',  txt: 'Stay in Central Zone (4-3-2-1 Dual Inv • Frets 2–11)' }
+      ],
+      m4: [
+        { val: 'zone',  txt: 'Central Neck Zone (6th & 5th Str • Frets 4–10)' },
+        { val: 'slide', txt: 'Lower Neck Zone (6th & 5th Str • Frets 0–8)' }
+      ]
+    };
+    const mOpts = neckOptionsByMod[activeModuleId] || neckOptionsByMod.m1;
+    posSel.innerHTML = mOpts.map(o =>
+      `<option value="${o.val}" ${o.val === posMode ? 'selected' : ''}>${o.txt}</option>`
+    ).join('');
+  }
 }
 
 window.selectModule = function(modId) {
@@ -2448,7 +2714,7 @@ function renderFretboard() {
   for (let s = 1; s <= 6; s++) {
     const wireH = s <= 2 ? '1.5px' : (s <= 4 ? '2.5px' : '3.5px');
     const mutedString = (activeBlockId === 'b1' && !barVoicingNotes.some(n => n.s === s)) ||
-                        (layout.shape === 'D2_4' && s >= 5);
+                        ((layout.shape === 'D2_4' || layout.shape === 'D2_4_INV') && s >= 5);
 
     html += `<div class="fret-string-row" style="grid-template-columns:${gridCols};">`;
     html += `<div class="string-header ${mutedString ? 'muted' : ''}">${STRING_LABELS[s]}${mutedString ? ' ×' : ''}</div>`;
@@ -2979,12 +3245,14 @@ window.toggleAiSettings = function() {
 
 window.onAiProviderSelect = function() {
   const p = document.getElementById('ai-provider').value;
-  document.getElementById('ai-key-row').style.display = (p === 'ollama') ? 'none' : 'block';
+  document.getElementById('ai-key-row').style.display = (p === 'ollama' || p === 'offline') ? 'none' : 'block';
   document.getElementById('ai-url-row').style.display = (p === 'ollama') ? 'block' : 'none';
+  const modCol = document.getElementById('ai-model-col');
+  if (modCol) modCol.style.display = (p === 'offline') ? 'none' : 'block';
   const modelEl = document.getElementById('ai-model');
-  if (p === 'gemini') modelEl.value = 'gemini-3.8-flash';
+  if (p === 'gemini') modelEl.value = 'gemini-2.5-flash';
   else if (p === 'openai') modelEl.value = 'gpt-4o-mini';
-  else modelEl.value = 'llama3.1';
+  else if (p === 'ollama') modelEl.value = 'llama3.1';
 };
 
 window.openGeminiKeyPage = function() {
@@ -2999,14 +3267,17 @@ window.openGeminiKeyPage = function() {
 function refreshAiStatusBadge() {
   if (window.pywebview && window.pywebview.api && window.pywebview.api.get_ai_status) {
     window.pywebview.api.get_ai_status().then(st => {
-      document.getElementById('ai-provider').value = st.provider || 'gemini';
-      document.getElementById('ai-model').value = st.model || 'gemini-3.8-flash';
+      const p = st.provider || 'gemini';
+      document.getElementById('ai-provider').value = p;
+      document.getElementById('ai-model').value = st.model || 'gemini-2.5-flash';
       document.getElementById('ai-base-url').value = st.base_url || 'http://localhost:11434';
-      document.getElementById('ai-key-row').style.display = (st.provider === 'ollama') ? 'none' : 'block';
-      document.getElementById('ai-url-row').style.display = (st.provider === 'ollama') ? 'block' : 'none';
+      document.getElementById('ai-key-row').style.display = (p === 'ollama' || p === 'offline') ? 'none' : 'block';
+      document.getElementById('ai-url-row').style.display = (p === 'ollama') ? 'block' : 'none';
+      const modCol = document.getElementById('ai-model-col');
+      if (modCol) modCol.style.display = (p === 'offline') ? 'none' : 'block';
       const sub = document.getElementById('ai-status-sub');
       if (st.configured) {
-        sub.textContent = `✓ Connected: ${st.provider.toUpperCase()} (${st.model}) • Scoped to App & Jazz`;
+        sub.textContent = `✓ Connected: ${p.toUpperCase()} (${st.model}) • Scoped to App & Jazz`;
         sub.style.color = '#34d399';
       } else {
         sub.textContent = '✓ Built-in App Help & Theory Coach Active (Optional API key in ⚙ AI Setup)';

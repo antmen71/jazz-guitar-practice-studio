@@ -176,14 +176,17 @@ class StudioApi:
             except Exception:
                 pass
 
-        # Auto-upgrade retired Gemini model IDs saved by earlier builds
+        # Auto-repair deprecated or overloaded default model IDs saved by earlier builds
         if cfg.get("provider") == "gemini" and cfg.get("model") in (
             "",
             "gemini-1.5-flash",
             "gemini-2.0-flash",
             "gemini-2.5-flash",
+            "gemini-3.5-flash-lite",
+            "gemini-3.6-flash",
+            "gemini-3.8-flash",
         ):
-            cfg["model"] = "gemini-3.8-flash"
+            cfg["model"] = "gemini-3.1-flash-lite"
 
         if not cfg["api_key"]:
             if cfg["provider"] == "gemini":
@@ -196,12 +199,17 @@ class StudioApi:
         cfg = self._load_ai_config_raw()
         key = cfg.get("api_key", "")
         provider = cfg.get("provider", "gemini")
-        configured = bool(key) if provider in ("gemini", "openai") else True
-        masked = f"{key[:4]}...{key[-4:]}" if len(key) >= 10 else ("Tanımlı" if key else "")
+        if provider == "offline":
+            configured = False
+        elif provider in ("gemini", "openai"):
+            configured = bool(key)
+        else:
+            configured = True
+        masked = f"{key[:4]}...{key[-4:]}" if len(key) >= 10 else ("Set" if key else "")
         return {
             "configured": configured,
             "provider": provider,
-            "model": cfg.get("model", "gemini-3.8-flash"),
+            "model": cfg.get("model", "gemini-2.5-flash"),
             "base_url": cfg.get("base_url", "http://localhost:11434"),
             "masked_key": masked,
         }
@@ -213,16 +221,23 @@ class StudioApi:
             existing = self._load_ai_config_raw()
             provider = payload.get("provider") or existing.get("provider", "gemini")
             new_key = (payload.get("api_key") or "").strip()
-            # Keep existing key if user left password box blank while changing model
-            final_key = new_key if new_key else existing.get("api_key", "")
+            clear_key = bool(payload.get("clear_key", False))
+            final_key = "" if clear_key else (new_key if new_key else existing.get("api_key", ""))
             default_model = (
-                "gemini-3.8-flash"
-                if provider == "gemini"
+                "gemini-2.5-flash"
+                if provider in ("gemini", "offline")
                 else ("gpt-4o-mini" if provider == "openai" else "llama3.1")
             )
             raw_model = (payload.get("model") or "").strip()
-            if provider == "gemini" and raw_model in ("", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"):
-                model = "gemini-3.8-flash"
+            if provider == "gemini" and raw_model in (
+                "",
+                "gemini-1.5-flash",
+                "gemini-2.0-flash",
+                "gemini-3.5-flash-lite",
+                "gemini-3.6-flash",
+                "gemini-3.8-flash",
+            ):
+                model = "gemini-2.5-flash"
             else:
                 model = raw_model or default_model
             base_url = (payload.get("base_url") or "http://localhost:11434").strip()
@@ -244,27 +259,25 @@ class StudioApi:
         if not question:
             return {"ok": False, "answer": "Please enter a question."}
 
+        ctx_dict = studio_context if isinstance(studio_context, dict) else {}
         cfg = self._load_ai_config_raw()
         provider = cfg.get("provider", "gemini")
         api_key = cfg.get("api_key", "")
-        model = cfg.get("model", "gemini-3.8-flash")
+        model = cfg.get("model", "gemini-2.5-flash")
 
-        # When no API key is configured, answer using the built-in Offline App Help & Theory Assistant!
-        if provider in ("gemini", "openai") and not api_key:
-            return answer_offline_coach(question, studio_context if isinstance(studio_context, dict) else {})
+        # Offline mode or no API key configured -> Built-in Offline App Help & Theory Assistant!
+        if provider == "offline" or (provider in ("gemini", "openai") and not api_key):
+            return answer_offline_coach(question, ctx_dict)
 
         # When API key (or Ollama) IS active, enforce strict off-topic / prompt-injection guardrail!
         refusal = check_off_topic_guardrail(question)
         if refusal:
             return {"ok": True, "answer": refusal}
 
-        system_prompt = build_strict_system_prompt(
-            studio_context if isinstance(studio_context, dict) else {}
-        )
+        system_prompt = build_strict_system_prompt(ctx_dict)
 
         try:
             if provider == "gemini":
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
                 contents = []
                 if isinstance(history, list):
                     for msg in history[-8:]:
@@ -278,19 +291,19 @@ class StudioApi:
                     "contents": contents,
                     "generationConfig": {"temperature": 0.45, "maxOutputTokens": 900},
                 }
-                # Automatic failover if the primary Gemini model is retired (404), busy (429/503), or slow (Timeout)
+                # Verified live Gemini models failover chain (fast 3.1-flash-lite primary)
                 candidate_models = [model]
                 for fb in (
-                    "gemini-3.8-flash",
-                    "gemini-3.6-flash",
-                    "gemini-3.5-flash-lite",
-                    "gemini-flash-lite-latest",
+                    "gemini-3.1-flash-lite",
+                    "gemini-2.5-flash-lite",
+                    "gemini-2.5-flash",
+                    "gemini-3-flash-preview",
+                    "gemini-2.5-pro",
                 ):
                     if fb not in candidate_models:
                         candidate_models.append(fb)
 
-                resp = None
-                last_exc = None
+                last_err = ""
                 for try_model in candidate_models:
                     try_url = f"https://generativelanguage.googleapis.com/v1beta/models/{try_model}:generateContent"
                     try:
@@ -298,30 +311,37 @@ class StudioApi:
                             try_url,
                             params={"key": api_key},
                             json=body,
-                            timeout=14,
+                            timeout=18,
                         )
                         if resp.status_code == 200:
-                            break
-                        if resp.status_code not in (404, 429, 500, 503):
-                            break
-                    except requests.exceptions.Timeout as tex:
-                        last_exc = tex
-                        resp = None
+                            data = resp.json()
+                            parts = (
+                                data.get("candidates", [{}])[0]
+                                .get("content", {})
+                                .get("parts", [])
+                            )
+                            answer = "".join(p.get("text", "") for p in parts).strip()
+                            if answer:
+                                return {"ok": True, "answer": answer, "model_used": try_model}
+                        try:
+                            err_msg = resp.json().get("error", {}).get("message", resp.text[:160])
+                        except Exception:
+                            err_msg = resp.text[:160]
+                        last_err = f"HTTP {resp.status_code}: {err_msg}"
+                        if resp.status_code in (404, 429, 500, 502, 503, 504):
+                            continue
+                        break
+                    except requests.exceptions.Timeout:
+                        last_err = f"Timeout on {try_model}"
                         continue
 
-                if resp is None:
-                    return {"ok": False, "answer": f"Connection timed out: {last_exc}"}
-                if resp.status_code != 200:
-                    err_msg = resp.json().get("error", {}).get("message", resp.text[:200])
-                    return {"ok": False, "answer": f"Gemini API hatası ({resp.status_code}): {err_msg}"}
-                data = resp.json()
-                parts = (
-                    data.get("candidates", [{}])[0]
-                    .get("content", {})
-                    .get("parts", [])
-                )
-                answer = "".join(p.get("text", "") for p in parts).strip()
-                return {"ok": True, "answer": answer or "Yanıt boş döndü."}
+                offline_fb = answer_offline_coach(question, ctx_dict)
+                return {
+                    "ok": True,
+                    "offline_fallback": True,
+                    "answer": offline_fb["answer"]
+                    + f"\n\n---\n*(Online Gemini models were temporarily busy [{last_err}]; answered via built-in Studio Assistant.)*",
+                }
 
             elif provider == "openai":
                 messages = [{"role": "system", "content": system_prompt}]
@@ -339,7 +359,12 @@ class StudioApi:
                     timeout=30,
                 )
                 if resp.status_code != 200:
-                    return {"ok": False, "answer": f"OpenAI API hatası ({resp.status_code}): {resp.text[:200]}"}
+                    offline_fb = answer_offline_coach(question, ctx_dict)
+                    return {
+                        "ok": True,
+                        "answer": offline_fb["answer"]
+                        + f"\n\n---\n*(OpenAI API returned HTTP {resp.status_code}; answered via built-in Studio Assistant.)*",
+                    }
                 answer = resp.json()["choices"][0]["message"]["content"].strip()
                 return {"ok": True, "answer": answer}
 
@@ -360,12 +385,17 @@ class StudioApi:
                     timeout=45,
                 )
                 if resp.status_code != 200:
-                    return {"ok": False, "answer": f"Ollama bağlantı hatası ({resp.status_code}): {resp.text[:200]}"}
+                    return {"ok": False, "answer": f"Ollama connection error ({resp.status_code}): {resp.text[:200]}"}
                 answer = resp.json().get("message", {}).get("content", "").strip()
-                return {"ok": True, "answer": answer or "Ollama yanıt döndürmedi."}
+                return {"ok": True, "answer": answer or "Ollama returned an empty response."}
 
         except Exception as exc:
-            return {"ok": False, "answer": f"Bağlantı hatası: {exc}"}
+            offline_fb = answer_offline_coach(question, ctx_dict)
+            return {
+                "ok": True,
+                "answer": offline_fb["answer"]
+                + f"\n\n---\n*(Network unavailable [{exc}]; answered via built-in Studio Assistant.)*",
+            }
 
 
 def launch_edge_app_fallback() -> int:
@@ -452,17 +482,23 @@ def main() -> int:
                   selectBlock('b4');
                   if (!document.getElementById('select-module').options[0].text.includes('Solo 4.1')) return false;
 
-                  // Test all 4 playable modules (m1, m2, m3, m4) across all 12 keys & 4 blocks (192 tables)!
+                  // Test all 4 playable modules (m1, m2, m3, m4) across BOTH Neck modes, 12 keys & 4 blocks (384 tables)!
                   for (const modId of ['m1', 'm2', 'm3', 'm4']) {
                     selectModule(modId);
-                    for (const k of KEYS) {
-                      for (const b of ['b1', 'b2', 'b3', 'b4']) {
-                        activeBlockId = b;
-                        const evs = buildEventsForKey(k);
-                        if (!evs || evs.length < 4) return false;
-                        for (const ev of evs) {
-                          for (const n of ev.notes) {
-                            if (n.f < 0 || n.f > 15) return false;
+                    const pWrap = document.getElementById('pos-strategy-wrap');
+                    const pSel = document.getElementById('select-pos-mode');
+                    if (!pWrap || pWrap.style.display === 'none' || !pSel || pSel.options.length < 2) return false;
+                    for (const nkMode of ['slide', 'zone']) {
+                      setPosMode(nkMode);
+                      for (const k of KEYS) {
+                        for (const b of ['b1', 'b2', 'b3', 'b4']) {
+                          activeBlockId = b;
+                          const evs = buildEventsForKey(k);
+                          if (!evs || evs.length < 4) return false;
+                          for (const ev of evs) {
+                            for (const n of ev.notes) {
+                              if (n.f < 0 || n.f > 15) return false;
+                            }
                           }
                         }
                       }
