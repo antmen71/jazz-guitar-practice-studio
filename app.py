@@ -165,7 +165,7 @@ class StudioApi:
         cfg = {
             "provider": "gemini",
             "api_key": "",
-            "model": "gemini-2.5-flash",
+            "model": "gemini-3.8-flash",
             "base_url": "http://localhost:11434",
         }
         if AI_CONFIG_FILE.exists():
@@ -175,6 +175,15 @@ class StudioApi:
                     cfg.update(disk)
             except Exception:
                 pass
+
+        # Auto-upgrade retired Gemini model IDs saved by earlier builds
+        if cfg.get("provider") == "gemini" and cfg.get("model") in (
+            "",
+            "gemini-1.5-flash",
+            "gemini-2.0-flash",
+            "gemini-2.5-flash",
+        ):
+            cfg["model"] = "gemini-3.8-flash"
 
         if not cfg["api_key"]:
             if cfg["provider"] == "gemini":
@@ -192,7 +201,7 @@ class StudioApi:
         return {
             "configured": configured,
             "provider": provider,
-            "model": cfg.get("model", "gemini-2.5-flash"),
+            "model": cfg.get("model", "gemini-3.8-flash"),
             "base_url": cfg.get("base_url", "http://localhost:11434"),
             "masked_key": masked,
         }
@@ -207,11 +216,15 @@ class StudioApi:
             # Keep existing key if user left password box blank while changing model
             final_key = new_key if new_key else existing.get("api_key", "")
             default_model = (
-                "gemini-2.5-flash"
+                "gemini-3.8-flash"
                 if provider == "gemini"
                 else ("gpt-4o-mini" if provider == "openai" else "llama3.1")
             )
-            model = (payload.get("model") or "").strip() or default_model
+            raw_model = (payload.get("model") or "").strip()
+            if provider == "gemini" and raw_model in ("", "gemini-1.5-flash", "gemini-2.0-flash", "gemini-2.5-flash"):
+                model = "gemini-3.8-flash"
+            else:
+                model = raw_model or default_model
             base_url = (payload.get("base_url") or "http://localhost:11434").strip()
             saved = {
                 "provider": provider,
@@ -234,7 +247,7 @@ class StudioApi:
         cfg = self._load_ai_config_raw()
         provider = cfg.get("provider", "gemini")
         api_key = cfg.get("api_key", "")
-        model = cfg.get("model", "gemini-2.5-flash")
+        model = cfg.get("model", "gemini-3.8-flash")
 
         # When no API key is configured, answer using the built-in Offline App Help & Theory Assistant!
         if provider in ("gemini", "openai") and not api_key:
@@ -265,12 +278,39 @@ class StudioApi:
                     "contents": contents,
                     "generationConfig": {"temperature": 0.45, "maxOutputTokens": 900},
                 }
-                resp = requests.post(
-                    url,
-                    params={"key": api_key},
-                    json=body,
-                    timeout=30,
-                )
+                # Automatic failover if the primary Gemini model is retired (404), busy (429/503), or slow (Timeout)
+                candidate_models = [model]
+                for fb in (
+                    "gemini-3.8-flash",
+                    "gemini-3.6-flash",
+                    "gemini-3.5-flash-lite",
+                    "gemini-flash-lite-latest",
+                ):
+                    if fb not in candidate_models:
+                        candidate_models.append(fb)
+
+                resp = None
+                last_exc = None
+                for try_model in candidate_models:
+                    try_url = f"https://generativelanguage.googleapis.com/v1beta/models/{try_model}:generateContent"
+                    try:
+                        resp = requests.post(
+                            try_url,
+                            params={"key": api_key},
+                            json=body,
+                            timeout=14,
+                        )
+                        if resp.status_code == 200:
+                            break
+                        if resp.status_code not in (404, 429, 500, 503):
+                            break
+                    except requests.exceptions.Timeout as tex:
+                        last_exc = tex
+                        resp = None
+                        continue
+
+                if resp is None:
+                    return {"ok": False, "answer": f"Connection timed out: {last_exc}"}
                 if resp.status_code != 200:
                     err_msg = resp.json().get("error", {}).get("message", resp.text[:200])
                     return {"ok": False, "answer": f"Gemini API hatası ({resp.status_code}): {err_msg}"}
