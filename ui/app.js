@@ -271,6 +271,7 @@ let labelMode = 'note';
 let zoomBoxOnly = false;
 let uiScalePx = 16;
 let uiViewMode = 'studio'; // 'simple' | 'studio'
+let circleDrawerOpen = false; // Collapsed by default; opens via right arrow button
 
 let bpm = 65;
 let cleanReps = 0;
@@ -2509,9 +2510,61 @@ function renderKeySelect() {
   }).join('');
 }
 
+window.toggleCircleDrawer = function(forceState) {
+  circleDrawerOpen = typeof forceState === 'boolean' ? forceState : !circleDrawerOpen;
+  renderCirclePanel();
+};
+
 function renderCirclePanel() {
   const isCircle = practiceLoopMode === 'circle';
-  document.getElementById('circle-panel').classList.toggle('circle-active', isCircle);
+  const panelEl = document.getElementById('circle-panel');
+  panelEl.classList.toggle('circle-active', isCircle);
+  panelEl.classList.toggle('open', circleDrawerOpen);
+
+  const drawerBtn = document.getElementById('btn-circle-drawer');
+  if (drawerBtn) drawerBtn.setAttribute('aria-expanded', String(circleDrawerOpen));
+
+  // Always update compact collapsed header summary
+  const badgeEl = document.getElementById('circle-collapsed-badge');
+  const sumKeyEl = document.getElementById('circle-collapsed-key');
+  const compactWarn = document.getElementById('next-key-alert-compact');
+  const curKeyObj = getKeyObj();
+  const curLay = getKeyLayout(curKeyObj);
+  const curBnd = getBoxBounds(curLay);
+
+  if (badgeEl) {
+    badgeEl.className = isCircle ? 'circle-mode-badge gold' : 'circle-mode-badge';
+    if (isCircle) {
+      const ordLbl = circleOrderMode === 'fourths' ? '4ths' : (circleOrderMode === 'fifths' ? '5ths' : 'Random');
+      const unitShort = circleUnitMode === 'chorus'
+        ? `${circleChorusesPerKey} ${circleChorusesPerKey === 1 ? 'Chorus' : 'Choruses'}`
+        : `${circleMinutesPerKey}m`;
+      badgeEl.textContent = `🔄 12-Key Circle (${ordLbl} • ${unitShort})`;
+    } else {
+      badgeEl.textContent = '🎯 Single Key Loop';
+    }
+  }
+  if (sumKeyEl) {
+    if (isCircle && isPlaying) {
+      const nextIdxC = (uiCircleIdx + 1) % uiCircleOrder.length;
+      sumKeyEl.textContent = `Key ${uiCircleIdx + 1}/12: ${curKeyObj.id} Major (Frets ${curBnd.min}–${curBnd.max} • ${getShortShapeCode(curLay)})  ➔  Next: ${uiCircleOrder[nextIdxC]}`;
+    } else {
+      sumKeyEl.textContent = `Key: ${curKeyObj.id} Major (Frets ${curBnd.min}–${curBnd.max} • ${getShortShapeCode(curLay)})`;
+    }
+  }
+  if (compactWarn) {
+    if (!circleDrawerOpen && isCircle && isPlaying && uiNextKeyWarnId) {
+      const nkC = getKeyById(uiNextKeyWarnId);
+      const nLayC = getKeyLayout(nkC);
+      const nBndC = getBoxBounds(nLayC);
+      compactWarn.classList.add('visible');
+      compactWarn.textContent = `⏭ NEXT BAR: ${nkC.id} Major (Fr ${nBndC.min}–${nBndC.max})`;
+    } else {
+      compactWarn.classList.remove('visible');
+      compactWarn.textContent = '';
+    }
+  }
+
   document.getElementById('btn-mode-single').classList.toggle('active', !isCircle);
   document.getElementById('btn-mode-circle').classList.toggle('active-gold', isCircle);
   document.getElementById('circle-controls').style.display = isCircle ? 'flex' : 'none';
@@ -2586,14 +2639,15 @@ function renderCirclePanel() {
 }
 
 function renderBlockTabs() {
-  const el = document.getElementById('block-tabs');
+  const selEl = document.getElementById('select-block');
+  if (!selEl) return;
   const fixedTitles = [
-    { id: 'b1', code: 'BLOCK 1 • 45 MIN', cat: 'Jazz Voicings & Comping' },
-    { id: 'b2', code: 'BLOCK 2 • 60 MIN', cat: 'Voice-Led 7th Arpeggios' },
-    { id: 'b3', code: 'BLOCK 3 • 45 MIN', cat: 'Modes & Lydian #4' },
-    { id: 'b4', code: 'BLOCK 4 • 60 MIN', cat: 'Jazz Trio Improvisation' }
+    { id: 'b1', min: '45m', cat: 'Jazz Voicings & Comping' },
+    { id: 'b2', min: '60m', cat: 'Voice-Led 7th Arpeggios' },
+    { id: 'b3', min: '45m', cat: 'Modes & Lydian #4' },
+    { id: 'b4', min: '60m', cat: 'Jazz Trio Improvisation' }
   ];
-  el.innerHTML = fixedTitles.map((ft, idx) => {
+  selEl.innerHTML = fixedTitles.map((ft, idx) => {
     const active = ft.id === activeBlockId;
     const modForBlock = active ? activeModuleId : (perBlockModule[ft.id] || 'm1');
     const bDef = getBlocksForModule(modForBlock).find(x => x.id === ft.id);
@@ -2602,17 +2656,10 @@ function renderBlockTabs() {
     ['m1', 'm2', 'm3', 'm4'].forEach(m => {
       if (getBlockProgress(ft.id, m).graduated) gradCount++;
     });
-    const stepNum = `${idx + 1}.${modForBlock.slice(1)}`;
-    const badge = prog.graduated
-      ? `<span class="badge-grad">🏆 ${stepNum} Grad (${gradCount}/4)</span>`
-      : `<span>Drill ${stepNum}: ${prog.bpm}/${bDef.goalBpm} BPM</span>`;
-    return `<button onclick="selectBlock('${ft.id}')" class="block-tab ${active ? 'active' : ''}">
-      <div class="block-tab-top">
-        <span>[${idx + 1}] ${ft.code}</span>
-        ${badge}
-      </div>
-      <div class="block-tab-title">${ft.cat}</div>
-    </button>`;
+    const statusTxt = prog.graduated
+      ? `🏆 Grad (${gradCount}/4)`
+      : `${prog.bpm}/${bDef.goalBpm} BPM`;
+    return `<option value="${ft.id}" ${active ? 'selected' : ''}>[${idx + 1}] ${ft.cat} (${ft.min}) — ${statusTxt}</option>`;
   }).join('');
 }
 

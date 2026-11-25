@@ -56,5 +56,8 @@ if (-not $iscc) {
 & $iscc (Join-Path $PSScriptRoot "installer.iss")
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed." }
 
+# Remove PyInstaller's temporary scratch 'build\' folder so incomplete stub EXEs are never left behind
+Remove-Item -Recurse -Force (Join-Path $PSScriptRoot "build") -ErrorAction SilentlyContinue
+
 Write-Host "✓ v$version Release artifacts ready in .\installer_output\" -ForegroundColor Green
 Get-ChildItem (Join-Path $PSScriptRoot "installer_output") | Select-Object Name, @{N="SizeMB";E={[math]::Round($_.Length/1MB, 2)}}

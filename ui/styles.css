@@ -170,20 +170,105 @@ select option {
   border-color: var(--accent-blue);
 }
 
-/* Circle of Fourths Studio Bar */
+/* Collapsible Key & Circle of Fourths Drawer */
 .circle-panel {
   background: var(--bg-panel);
   border: 1px solid var(--border-subtle);
   border-radius: 0.75rem;
-  padding: 0.7rem 1rem;
+  padding: 0.48rem 0.9rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  transition: border-color 140ms ease;
 }
 
-.circle-panel.circle-active {
+.circle-panel.circle-active.open {
   border-color: rgba(245, 158, 11, 0.55);
   box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.16);
+}
+
+.circle-drawer-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  cursor: pointer;
+}
+
+.circle-summary-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.circle-mode-badge {
+  font-family: Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.22rem 0.58rem;
+  border-radius: 0.4rem;
+  background: rgba(2, 132, 199, 0.2);
+  border: 1px solid var(--accent-blue);
+  color: #bae6fd;
+}
+
+.circle-mode-badge.gold {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold-bright);
+}
+
+.circle-summary-key {
+  font-family: Consolas, "Segoe UI", monospace;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.btn-drawer-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  border: 1px solid var(--border-strong);
+  border-radius: 0.45rem;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all 120ms ease;
+}
+
+.btn-drawer-arrow:hover {
+  border-color: var(--accent-blue);
+  background: #243147;
+}
+
+.drawer-chevron {
+  font-size: 0.78rem;
+  display: inline-block;
+  transition: transform 150ms ease;
+  color: var(--accent-gold-bright);
+}
+
+.circle-panel.open .drawer-chevron {
+  transform: rotate(180deg);
+}
+
+.circle-drawer-body {
+  display: none;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.circle-panel.open .circle-drawer-body {
+  display: flex;
 }
 
 .circle-top-row {

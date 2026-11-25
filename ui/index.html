@@ -12,6 +12,11 @@
     <!-- Top Studio Header -->
     <header class="top-header">
       <div class="brand-group">
+        <div class="ctrl-group" style="background:rgba(16,185,129,0.16);border-color:#34d399;padding:0.28rem 0.55rem;" title="Select Daily Practice Block (Shortcuts: 1–4)">
+          <span class="ctrl-label" style="color:#a7f3d0;font-weight:800;">Block:</span>
+          <select id="select-block" class="select-studio" style="background:#0b1322;color:#fff;border-color:#34d399;padding:0.32rem 0.6rem;font-size:0.88rem;" onchange="selectBlock(this.value)"></select>
+        </div>
+
         <div class="ctrl-group" style="background:rgba(2,132,199,0.18);border-color:#38bdf8;padding:0.28rem 0.55rem;">
           <span id="drill-select-label" class="ctrl-label" style="color:#bae6fd;font-weight:800;">Chord Drill:</span>
           <select id="select-module" class="select-studio" style="background:#0b1322;color:#fff;border-color:#38bdf8;padding:0.32rem 0.6rem;font-size:0.88rem;" onchange="selectModule(this.value)"></select>
@@ -54,78 +59,90 @@
       </div>
     </header>
 
-    <!-- Continuous Circle of Fourths & Key Loop Engine Panel -->
+    <!-- Collapsible Key & Circle Loop Drawer (Collapsed by Default, Opens via Right Arrow) -->
     <section id="circle-panel" class="circle-panel">
-      <div class="circle-top-row">
-        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.65rem;">
-          <div class="mode-pill-switch">
-            <button id="btn-mode-single" class="mode-pill-btn" onclick="setPracticeLoopMode('single')">
-              🎯 Single Key Loop
-            </button>
-            <button id="btn-mode-circle" class="mode-pill-btn active-gold" onclick="setPracticeLoopMode('circle')">
-              🔄 12-Key Circle Loop (Continuous)
-            </button>
-          </div>
-
-          <div class="ctrl-group">
-            <span id="key-select-label" class="ctrl-label">Starting Key:</span>
-            <select id="select-key" class="select-studio" onchange="onKeyChange(this.value)"></select>
-          </div>
+      <div class="circle-drawer-header" onclick="toggleCircleDrawer()" title="Click to expand or collapse Key & Circle Loop settings">
+        <div class="circle-summary-left">
+          <span id="circle-collapsed-badge" class="circle-mode-badge">🔄 12-Key Circle</span>
+          <span id="circle-collapsed-key" class="circle-summary-key">Active Key: C Major</span>
+          <span id="next-key-alert-compact" class="next-key-alert"></span>
         </div>
 
-        <!-- Circle-Only Settings Row -->
-        <div id="circle-controls" class="circle-options-row">
-          <div class="ctrl-group">
-            <span class="ctrl-label">Order:</span>
-            <select id="select-circle-order" class="select-studio" onchange="setCircleOrderMode(this.value)">
-              <option value="fourths">Circle of 4ths (C→F→Bb...)</option>
-              <option value="fifths">Circle of 5ths (C→G→D...)</option>
-              <option value="random">Random 12 Keys (Quiz)</option>
-            </select>
-          </div>
+        <button id="btn-circle-drawer" type="button" class="btn-drawer-arrow" onclick="event.stopPropagation(); toggleCircleDrawer();" aria-expanded="false" title="Show / Hide Single Key & 12-Key Circle Loop controls">
+          <span id="circle-drawer-label">Key &amp; Loop Settings</span>
+          <span id="circle-drawer-arrow" class="drawer-chevron">▼</span>
+        </button>
+      </div>
 
-          <div class="ctrl-group">
-            <div class="mode-pill-switch" style="padding:0.12rem;">
-              <button id="btn-unit-chorus" class="mode-pill-btn active-gold" style="padding:0.22rem 0.55rem;font-size:0.8rem;" onclick="setCircleUnitMode('chorus')">
-                Choruses
+      <div id="circle-drawer-body" class="circle-drawer-body">
+        <div class="circle-top-row">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:0.65rem;">
+            <div class="mode-pill-switch">
+              <button id="btn-mode-single" class="mode-pill-btn" onclick="setPracticeLoopMode('single')">
+                🎯 Single Key Loop
               </button>
-              <button id="btn-unit-minutes" class="mode-pill-btn" style="padding:0.22rem 0.55rem;font-size:0.8rem;" onclick="setCircleUnitMode('minutes')">
-                Minutes
+              <button id="btn-mode-circle" class="mode-pill-btn active-gold" onclick="setPracticeLoopMode('circle')">
+                🔄 12-Key Circle Loop (Continuous)
               </button>
             </div>
-            <button class="stepper-btn" onclick="stepCircleAmount(-1)">−</button>
-            <span id="circle-amount-readout" class="stepper-val">1 Chorus</span>
-            <button class="stepper-btn" onclick="stepCircleAmount(1)">+</button>
+
+            <div class="ctrl-group">
+              <span id="key-select-label" class="ctrl-label">Starting Key:</span>
+              <select id="select-key" class="select-studio" onchange="onKeyChange(this.value)"></select>
+            </div>
           </div>
 
-          <label class="mix-toggle" title="Inserts 1 bar (4 beats) of count-in & previews the new fret box between key changes">
-            <input id="chk-circle-breath" type="checkbox" onchange="setCircleBreath(this.checked)" />
-            <span>1-Bar Transition Breath</span>
-          </label>
+          <!-- Circle-Only Settings Row -->
+          <div id="circle-controls" class="circle-options-row">
+            <div class="ctrl-group">
+              <span class="ctrl-label">Order:</span>
+              <select id="select-circle-order" class="select-studio" onchange="setCircleOrderMode(this.value)">
+                <option value="fourths">Circle of 4ths (C→F→Bb...)</option>
+                <option value="fifths">Circle of 5ths (C→G→D...)</option>
+                <option value="random">Random 12 Keys (Quiz)</option>
+              </select>
+            </div>
 
-          <div class="ctrl-group" title="Behavior after completing all 12 keys">
-            <span class="ctrl-label">After 12 Keys:</span>
-            <select id="select-circle-end" class="select-studio" onchange="setCircleEndAction(this.value)">
-              <option value="plus5">+5 BPM &amp; Continue</option>
-              <option value="loop">Infinite Loop (Keep BPM)</option>
-              <option value="stop">Stop After 12 Keys</option>
-            </select>
+            <div class="ctrl-group">
+              <div class="mode-pill-switch" style="padding:0.12rem;">
+                <button id="btn-unit-chorus" class="mode-pill-btn active-gold" style="padding:0.22rem 0.55rem;font-size:0.8rem;" onclick="setCircleUnitMode('chorus')">
+                  Choruses
+                </button>
+                <button id="btn-unit-minutes" class="mode-pill-btn" style="padding:0.22rem 0.55rem;font-size:0.8rem;" onclick="setCircleUnitMode('minutes')">
+                  Minutes
+                </button>
+              </div>
+              <button class="stepper-btn" onclick="stepCircleAmount(-1)">−</button>
+              <span id="circle-amount-readout" class="stepper-val">1 Chorus</span>
+              <button class="stepper-btn" onclick="stepCircleAmount(1)">+</button>
+            </div>
+
+            <label class="mix-toggle" title="Inserts 1 bar (4 beats) of count-in & previews the new fret box between key changes">
+              <input id="chk-circle-breath" type="checkbox" onchange="setCircleBreath(this.checked)" />
+              <span>1-Bar Transition Breath</span>
+            </label>
+
+            <div class="ctrl-group" title="Behavior after completing all 12 keys">
+              <span class="ctrl-label">After 12 Keys:</span>
+              <select id="select-circle-end" class="select-studio" onchange="setCircleEndAction(this.value)">
+                <option value="plus5">+5 BPM &amp; Continue</option>
+                <option value="loop">Infinite Loop (Keep BPM)</option>
+                <option value="stop">Stop After 12 Keys</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Visual 12-Key Ring Strip -->
-      <div id="key-ring-grid" class="key-ring-grid"></div>
+        <!-- Visual 12-Key Ring Strip -->
+        <div id="key-ring-grid" class="key-ring-grid"></div>
 
-      <!-- Live Circle Telemetry & Mode Status -->
-      <div id="circle-telemetry" class="circle-live-status">
-        <span id="circle-progress-text"></span>
-        <span id="next-key-alert" class="next-key-alert"></span>
+        <!-- Live Circle Telemetry & Mode Status -->
+        <div id="circle-telemetry" class="circle-live-status">
+          <span id="circle-progress-text"></span>
+          <span id="next-key-alert" class="next-key-alert"></span>
+        </div>
       </div>
     </section>
-
-    <!-- 4-Block Daily Workout Selector -->
-    <section id="block-tabs" class="block-grid"></section>
 
     <!-- Live Guitar Listener & Auto-Advance Judge Deck -->
     <section id="judge-panel" class="judge-panel">

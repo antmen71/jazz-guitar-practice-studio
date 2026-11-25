@@ -517,7 +517,13 @@ def main() -> int:
                   if (!document.getElementById('beat-pad-4')) return false;
                   if (!document.getElementById('judge-panel') || !document.getElementById('judge-bar-4')) return false;
                   if (document.querySelectorAll('.fret-string-row').length !== 6) return false;
-                  if (document.querySelectorAll('.block-tab').length !== 4) return false;
+                  const blkSel = document.getElementById('select-block');
+                  if (!blkSel || blkSel.options.length !== 4) return false;
+                  if (typeof toggleCircleDrawer !== 'function' || !document.getElementById('btn-circle-drawer')) return false;
+                  if (document.getElementById('circle-panel').classList.contains('open')) return false;
+                  toggleCircleDrawer(true);
+                  if (!document.getElementById('circle-panel').classList.contains('open')) return false;
+                  toggleCircleDrawer(false);
                   if (document.querySelectorAll('.key-node').length !== 12) return false;
 
                   // Verify top dropdown dynamically changes per Block (b1=Chord, b2=Arp, b3=Mode, b4=Solo)!
