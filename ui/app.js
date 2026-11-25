@@ -270,6 +270,7 @@ let circleEndAction = 'plus5';   // 'plus5' | 'loop' | 'stop'
 let labelMode = 'note';
 let zoomBoxOnly = false;
 let uiScalePx = 16;
+let uiViewMode = 'studio'; // 'simple' | 'studio'
 
 let bpm = 65;
 let cleanReps = 0;
@@ -367,6 +368,7 @@ function syncSettingsToCache() {
   appStateCache.lastBlockId = activeBlockId;
   appStateCache.lastKeyId = currentKeyId;
   appStateCache.uiScalePx = uiScalePx;
+  appStateCache.uiViewMode = uiViewMode;
   appStateCache.zoomBoxOnly = zoomBoxOnly;
   appStateCache.b1RhythmMode = b1RhythmMode;
   appStateCache.posMode = posMode;
@@ -2353,6 +2355,25 @@ window.toggleBoxZoom = function() {
   renderFretboard();
 };
 
+function renderViewModeUI() {
+  const isSimple = uiViewMode === 'simple';
+  document.body.classList.toggle('simple-view-mode', isSimple);
+  const btn = document.getElementById('btn-view-mode');
+  if (btn) {
+    btn.classList.toggle('simple-active', isSimple);
+    btn.textContent = isSimple ? '🎛️ Full Studio (V)' : '✨ Simple View (V)';
+    btn.title = isSimple
+      ? 'Expand all studio controls, tab strip, timer, and 12-key grid (Shortcut: V)'
+      : 'Switch to clean, distraction-free Simple View (Shortcut: V)';
+  }
+}
+
+window.toggleViewMode = function() {
+  uiViewMode = (uiViewMode === 'simple') ? 'studio' : 'simple';
+  renderViewModeUI();
+  persistState();
+};
+
 window.requestAppFullscreen = function() {
   if (window.pywebview && window.pywebview.api && window.pywebview.api.toggle_fullscreen) {
     window.pywebview.api.toggle_fullscreen();
@@ -3406,6 +3427,7 @@ window.addEventListener('keydown', (e) => {
   else if (e.code === 'ArrowUp') { e.preventDefault(); adjustBpm(5); }
   else if (e.code === 'ArrowDown') { e.preventDefault(); adjustBpm(-5); }
   else if (e.code === 'KeyT') { e.preventDefault(); toggleTimer(); }
+  else if (e.code === 'KeyV') { e.preventDefault(); toggleViewMode(); }
   else if (e.code === 'KeyZ') { e.preventDefault(); toggleBoxZoom(); }
   else if (e.code === 'Digit1') { selectBlock('b1'); }
   else if (e.code === 'Digit2') { selectBlock('b2'); }
@@ -3490,6 +3512,14 @@ function applyHydratedState(data) {
     autoJudgeMuteLead = data.autoJudgeMuteLead;
   }
   renderJudgeBarUI();
+  if (data.uiViewMode === 'simple' || data.uiViewMode === 'studio') {
+    uiViewMode = data.uiViewMode;
+  } else {
+    // Default brand-new installs to calm Simple View; keep Full Studio for existing users with progress!
+    const hasExistingBlocks = data.blocks && Object.keys(data.blocks).length > 0;
+    uiViewMode = hasExistingBlocks ? 'studio' : 'simple';
+  }
+  renderViewModeUI();
   if (data.uiScalePx) setUiScale(Number(data.uiScalePx));
   if (data.zoomBoxOnly) {
     zoomBoxOnly = true;

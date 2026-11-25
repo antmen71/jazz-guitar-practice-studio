@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -16,20 +17,63 @@ from coach_assistant import (
     check_off_topic_guardrail,
 )
 
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 IS_FROZEN = bool(getattr(sys, "frozen", False))
 RESOURCE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 EXE_DIR = Path(sys.executable).resolve().parent if IS_FROZEN else Path(__file__).resolve().parent
 
-if IS_FROZEN:
-    if (EXE_DIR / "portable.txt").exists() or "--portable" in sys.argv:
-        DATA_DIR = EXE_DIR / "data"
-    else:
-        local_appdata = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
-        DATA_DIR = local_appdata / "JazzGuitarPracticeStudio" / "data"
-else:
-    DATA_DIR = EXE_DIR / "data"
 
+def _resolve_writable_data_dir() -> Path:
+    local_appdata = Path(os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local"))
+    appdata_target = local_appdata / "JazzGuitarPracticeStudio" / "data"
+
+    if not IS_FROZEN:
+        preferred = EXE_DIR / "data"
+    else:
+        exe_stem = Path(sys.executable).stem.lower()
+        in_temp_dir = tempfile.gettempdir().lower() in str(EXE_DIR).lower()
+        want_portable = (
+            (EXE_DIR / "portable.txt").exists()
+            or "--portable" in sys.argv
+            or ("portable" in exe_stem and not in_temp_dir)
+        )
+        preferred = (EXE_DIR / "data") if want_portable else appdata_target
+
+    for candidate in (preferred, appdata_target, Path(tempfile.gettempdir()) / "JazzGuitarPracticeStudio" / "data"):
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+            probe = candidate / ".write_probe"
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink(missing_ok=True)
+            return candidate
+        except Exception:
+            continue
+    return appdata_target
+
+
+def unblock_windows_zone_identifiers() -> None:
+    """
+    Remove Windows 'Mark-of-the-Web' (:Zone.Identifier ADS) from extracted DLL/PYD files
+    before pythonnet (.NET Framework CLR) loads Microsoft.Web.WebView2.*.dll on Windows 10.
+    """
+    if sys.platform != "win32" or not IS_FROZEN:
+        return
+    roots = {RESOURCE_DIR, EXE_DIR}
+    for root in roots:
+        if not root.exists():
+            continue
+        try:
+            for p in root.rglob("*"):
+                if p.suffix.lower() in (".dll", ".pyd", ".exe"):
+                    try:
+                        os.unlink(f"{p}:Zone.Identifier")
+                    except OSError:
+                        pass
+        except Exception:
+            pass
+
+
+DATA_DIR = _resolve_writable_data_dir()
 BASE_DIR = EXE_DIR
 UI_ENTRY = RESOURCE_DIR / "ui" / "index.html"
 ICON_FILE = RESOURCE_DIR / "assets" / "studio_icon.ico"
@@ -39,11 +83,14 @@ LOG_FILE = DATA_DIR / "app.log"
 
 
 def ensure_stdio_for_pythonw() -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    if sys.stdout is None:
-        sys.stdout = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
-    if sys.stderr is None:
-        sys.stderr = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
+    try:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        if sys.stdout is None:
+            sys.stdout = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
+        if sys.stderr is None:
+            sys.stderr = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
+    except Exception:
+        pass
 
 
 def enable_windows_hidpi() -> None:
@@ -424,6 +471,7 @@ def launch_edge_app_fallback() -> int:
 
 def main() -> int:
     ensure_stdio_for_pythonw()
+    unblock_windows_zone_identifiers()
     enable_windows_hidpi()
     smoke_test = "--smoke-test" in sys.argv
     force_browser = "--browser" in sys.argv

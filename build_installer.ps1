@@ -1,38 +1,44 @@
-﻿# Reproducible Windows Release Builder for Jazz Guitar Practice Studio
+﻿# Reproducible Windows Release Builder for Jazz Guitar Practice Studio v1.1.0
 # Builds:
-#   1) Standalone executable folder (dist\JazzGuitarStudio)
-#   2) Native Windows Setup Wizard (installer_output\JazzGuitarPracticeStudio_Setup_v1.0.0.exe)
-#   3) Portable ZIP archive (installer_output\JazzGuitarPracticeStudio_Portable_v1.0.0_win64.zip)
+#   1) Standalone onedir folder (dist\JazzGuitarStudio) -> compiled into Setup.exe
+#   2) Single-file crash-proof Portable EXE (installer_output\JazzGuitarPracticeStudio_Portable_v1.1.0_win64.exe)
+#   3) Portable ZIP containing the single-file EXE (installer_output\JazzGuitarPracticeStudio_Portable_v1.1.0_win64.zip)
+#   4) Native Windows Setup Wizard (installer_output\JazzGuitarPracticeStudio_Setup_v1.1.0.exe)
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
-$version = "1.0.0"
+$version = "1.1.0"
+New-Item -ItemType Directory -Force -Path (Join-Path $PSScriptRoot "installer_output") | Out-Null
+Remove-Item (Join-Path $PSScriptRoot "installer_output\*") -Force -ErrorAction SilentlyContinue
 
-Write-Host "==> [1/4] Compiling standalone JazzGuitarStudio.exe via PyInstaller..." -ForegroundColor Cyan
+Write-Host "==> [1/5] Compiling fast-start onedir JazzGuitarStudio.exe for Installer..." -ForegroundColor Cyan
 pyinstaller --noconfirm --clean JazzGuitarStudio.spec
-if ($LASTEXITCODE -ne 0) { throw "PyInstaller build failed." }
+if ($LASTEXITCODE -ne 0) { throw "PyInstaller onedir build failed." }
 
-Write-Host "==> [2/4] Running headless WebView2 smoke test on compiled EXE..." -ForegroundColor Cyan
+Write-Host "==> [2/5] Smoke-testing onedir EXE..." -ForegroundColor Cyan
 $exePath = Join-Path $PSScriptRoot "dist\JazzGuitarStudio\JazzGuitarStudio.exe"
 $proc = Start-Process -FilePath $exePath -ArgumentList "--smoke-test", "--portable" -Wait -PassThru
 Remove-Item -Recurse -Force (Join-Path $PSScriptRoot "dist\JazzGuitarStudio\data") -ErrorAction SilentlyContinue
-if ($proc.ExitCode -ne 0) { throw "Smoke test failed with exit code $($proc.ExitCode)" }
+if ($proc.ExitCode -ne 0) { throw "Onedir smoke test failed with exit code $($proc.ExitCode)" }
 
-New-Item -ItemType Directory -Force -Path (Join-Path $PSScriptRoot "installer_output") | Out-Null
+Write-Host "==> [3/5] Compiling single-file crash-proof Portable EXE (Win10 Zone.Identifier immune)..." -ForegroundColor Cyan
+pyinstaller --noconfirm --clean JazzGuitarStudio_Portable.spec
+if ($LASTEXITCODE -ne 0) { throw "PyInstaller onefile portable build failed." }
 
-Write-Host "==> [3/4] Creating Portable Win64 ZIP..." -ForegroundColor Cyan
-$portableStage = Join-Path $PSScriptRoot "build\portable_stage\JazzGuitarPracticeStudio"
-if (Test-Path $portableStage) { Remove-Item -Recurse -Force $portableStage }
-New-Item -ItemType Directory -Force -Path $portableStage | Out-Null
-Copy-Item -Recurse -Force (Join-Path $PSScriptRoot "dist\JazzGuitarStudio\*") $portableStage
-Set-Content -Path (Join-Path $portableStage "portable.txt") -Value "Portable mode enabled: user progress and AI settings are saved in .\data\" -Encoding UTF8
+$portableExeBuilt = Join-Path $PSScriptRoot "dist\JazzGuitarPracticeStudio_Portable_v${version}_win64.exe"
+$portableExeOut = Join-Path $PSScriptRoot "installer_output\JazzGuitarPracticeStudio_Portable_v${version}_win64.exe"
+Copy-Item -Force $portableExeBuilt $portableExeOut
+
+Write-Host "==> [4/5] Smoke-testing single-file Portable EXE & creating Portable ZIP..." -ForegroundColor Cyan
+$procPort = Start-Process -FilePath $portableExeOut -ArgumentList "--smoke-test" -Wait -PassThru
+Remove-Item -Recurse -Force (Join-Path $PSScriptRoot "installer_output\data") -ErrorAction SilentlyContinue
+if ($procPort.ExitCode -ne 0) { throw "Single-file Portable EXE smoke test failed with exit code $($procPort.ExitCode)" }
 
 $zipOut = Join-Path $PSScriptRoot "installer_output\JazzGuitarPracticeStudio_Portable_v${version}_win64.zip"
-if (Test-Path $zipOut) { Remove-Item -Force $zipOut }
-Compress-Archive -Path $portableStage -DestinationPath $zipOut -CompressionLevel Optimal
+Compress-Archive -Path $portableExeOut -DestinationPath $zipOut -CompressionLevel Optimal
 
-Write-Host "==> [4/4] Compiling Windows Setup.exe via Inno Setup 6..." -ForegroundColor Cyan
+Write-Host "==> [5/5] Compiling Windows Setup.exe via Inno Setup 6..." -ForegroundColor Cyan
 $isccCandidates = @(
     "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe",
     "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
@@ -44,11 +50,11 @@ if (-not $iscc) {
     if ($cmd) { $iscc = $cmd.Source }
 }
 if (-not $iscc) {
-    throw "Inno Setup 6 (ISCC.exe) not found. Install via: winget install --id JRSoftware.InnoSetup --scope user"
+    throw "Inno Setup 6 (ISCC.exe) not found."
 }
 
 & $iscc (Join-Path $PSScriptRoot "installer.iss")
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed." }
 
-Write-Host "✓ Release artifacts ready in .\installer_output\" -ForegroundColor Green
+Write-Host "✓ v$version Release artifacts ready in .\installer_output\" -ForegroundColor Green
 Get-ChildItem (Join-Path $PSScriptRoot "installer_output") | Select-Object Name, @{N="SizeMB";E={[math]::Round($_.Length/1MB, 2)}}

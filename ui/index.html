@@ -23,6 +23,10 @@
       </div>
 
       <div class="header-controls">
+        <button id="btn-view-mode" class="btn-view-mode" onclick="toggleViewMode()" title="Switch between Clean Simple View and Full Studio Controls (Shortcut: V)">
+          🎛️ Full Studio (V)
+        </button>
+
         <button class="btn-roadmap" onclick="toggleRoadmapModal()" title="View Full 8-Module Jazz Guitar Curriculum (R)">
           🗺️ 8-Module Roadmap (R)
         </button>
@@ -132,7 +136,11 @@
             <span id="judge-btn-label">🎙️ Auto-Judge: OFF (J)</span>
           </button>
 
-          <div class="ctrl-group" title="Select your audio interface guitar input (WASAPI low-latency shared mode)">
+          <span id="judge-collapsed-hint" class="judge-collapsed-hint">
+            Plug in your guitar &amp; enable <strong>Auto-Judge (J)</strong> to grade 4-bar choruses and auto-advance reps &amp; Circle keys.
+          </span>
+
+          <div class="ctrl-group judge-active-only" title="Select your audio interface guitar input (WASAPI low-latency shared mode)">
             <span class="ctrl-label">Input:</span>
             <select id="select-audio-in" class="select-studio" style="max-width:250px;" onchange="onJudgeDeviceChange(this.value)">
               <option value="">Default Audio Input</option>
@@ -144,7 +152,7 @@
             </select>
           </div>
 
-          <div class="judge-meter-group" title="Live guitar input signal level">
+          <div class="judge-meter-group judge-active-only" title="Live guitar input signal level">
             <span class="ctrl-label">Signal:</span>
             <div class="judge-meter-track">
               <div id="judge-meter-fill" class="judge-meter-fill"></div>
@@ -153,7 +161,7 @@
           </div>
         </div>
 
-        <div class="judge-right-controls">
+        <div class="judge-right-controls judge-active-only">
           <div class="ctrl-group" title="Minimum chorus accuracy required to count as a Clean Rep / advance key">
             <span class="ctrl-label">Pass:</span>
             <select id="select-judge-thresh" class="select-studio" onchange="onJudgeThresholdChange(this.value)">
@@ -183,9 +191,9 @@
         </div>
       </div>
 
-      <div class="judge-score-row">
+      <div class="judge-score-row judge-active-only">
         <div id="judge-summary-text" class="judge-summary-text">
-          🎙️ Plug guitar into your audio interface &amp; enable <strong>Auto-Judge (J)</strong> — clean 4-bar choruses automatically log reps, step +5 BPM, and advance keys!
+          🎙️ Ready — press <strong>Space</strong> and play along! Resting choruses carry zero penalty.
         </div>
 
         <div class="judge-bars-right">

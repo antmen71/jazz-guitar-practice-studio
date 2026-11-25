@@ -6,12 +6,12 @@ Designed for serious daily jazz guitar workouts across all **12 keys**, combinin
 
 ---
 
-## ⬇️ Download for Windows (No Python Required)
+## ⬇️ Download for Windows (No Python Required — v1.1.0)
 
-Download and install directly on **Windows 10 / Windows 11 (64-bit)** from [**GitHub Releases**](https://github.com/antmen71/jazz-guitar-practice-studio/releases/latest):
+Download and run directly on **Windows 10 / Windows 11 (64-bit)** from [**GitHub Releases (v1.1.0)**](https://github.com/antmen71/jazz-guitar-practice-studio/releases/tag/v1.1.0):
 
-- 💿 **[JazzGuitarPracticeStudio_Setup_v1.0.0.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.0.0/JazzGuitarPracticeStudio_Setup_v1.0.0.exe)** — **Recommended Windows Installer** (creates Start Menu & optional Desktop shortcuts, English & Turkish setup wizard, clean uninstaller; stores user progress safely in `%LOCALAPPDATA%\JazzGuitarPracticeStudio`).
-- 📦 **[JazzGuitarPracticeStudio_Portable_v1.0.0_win64.zip](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.0.0/JazzGuitarPracticeStudio_Portable_v1.0.0_win64.zip)** — **Portable Edition** (extract anywhere and run `JazzGuitarStudio.exe`; stores data inside `.\data\`).
+- 💿 **[JazzGuitarPracticeStudio_Setup_v1.1.0.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.1.0/JazzGuitarPracticeStudio_Setup_v1.1.0.exe)** — **Recommended Windows Installer** (creates Start Menu & optional Desktop shortcuts, English & Turkish setup wizard, clean uninstaller; stores user progress safely in `%LOCALAPPDATA%\JazzGuitarPracticeStudio`).
+- 🚀 **[JazzGuitarPracticeStudio_Portable_v1.1.0_win64.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.1.0/JazzGuitarPracticeStudio_Portable_v1.1.0_win64.exe)** — **Single-File Portable `.exe`** (no installation, no `_internal` DLL folder, immune to Windows 10 `.zip` DLL blocking; also available wrapped as **[JazzGuitarPracticeStudio_Portable_v1.1.0_win64.zip](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.1.0/JazzGuitarPracticeStudio_Portable_v1.1.0_win64.zip)**).
 
 ---
 

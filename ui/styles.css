@@ -1633,3 +1633,53 @@ kbd {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+/* Auto-Collapse Judge Technical Controls When OFF */
+.judge-collapsed-hint {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+.judge-panel:not(.listening) .judge-active-only {
+  display: none !important;
+}
+
+.judge-panel.listening .judge-collapsed-hint {
+  display: none !important;
+}
+
+/* Simple View vs. Full Studio View Switch */
+.btn-view-mode {
+  background: rgba(167, 139, 250, 0.16);
+  color: #ddd6fe;
+  border: 1px solid var(--accent-purple);
+  border-radius: 0.45rem;
+  padding: 0.36rem 0.72rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.btn-view-mode:hover {
+  background: rgba(167, 139, 250, 0.28);
+}
+
+.btn-view-mode.simple-active {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #1c1917;
+  border-color: #fde68a;
+}
+
+/* Clean, Non-Daunting Simple View Layout */
+body.simple-view-mode .strip-panel,
+body.simple-view-mode .timer-row,
+body.simple-view-mode .drill-purpose,
+body.simple-view-mode .shortcut-bar {
+  display: none !important;
+}
+
+body.simple-view-mode .circle-panel:not(.circle-active) #key-ring-grid,
+body.simple-view-mode .circle-panel:not(.circle-active) #circle-telemetry {
+  display: none !important;
+}

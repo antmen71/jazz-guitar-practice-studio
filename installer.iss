@@ -1,6 +1,6 @@
 ; Inno Setup 6 Script for Jazz Guitar Practice Studio
 #define MyAppName "Jazz Guitar Practice Studio"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Orkun Antmen"
 #define MyAppURL "https://github.com/antmen71/jazz-guitar-practice-studio"
 #define MyAppExeName "JazzGuitarStudio.exe"
