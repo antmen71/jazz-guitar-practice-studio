@@ -9,58 +9,63 @@
 <body>
   <div class="app-shell">
 
-    <!-- Top Studio Header -->
+    <!-- Top Studio Header (2-Tier Precision Rack Layout) -->
     <header class="top-header">
-      <div class="brand-group">
-        <div class="ctrl-group" style="background:rgba(16,185,129,0.16);border-color:#34d399;padding:0.28rem 0.55rem;" title="Select Daily Practice Block (Shortcuts: 1–4)">
-          <span class="ctrl-label" style="color:#a7f3d0;font-weight:800;">Block:</span>
-          <select id="select-block" class="select-studio" style="background:#0b1322;color:#fff;border-color:#34d399;padding:0.32rem 0.6rem;font-size:0.88rem;" onchange="selectBlock(this.value)"></select>
-        </div>
-
-        <div class="ctrl-group" style="background:rgba(2,132,199,0.18);border-color:#38bdf8;padding:0.28rem 0.55rem;">
-          <span id="drill-select-label" class="ctrl-label" style="color:#bae6fd;font-weight:800;">Chord Drill:</span>
-          <select id="select-module" class="select-studio" style="background:#0b1322;color:#fff;border-color:#38bdf8;padding:0.32rem 0.6rem;font-size:0.88rem;" onchange="selectModule(this.value)"></select>
-        </div>
-        <div>
+      <div class="header-top-tier">
+        <div class="brand-title-stack">
           <h1 id="header-mod-title" class="brand-title">Jazz Guitar Practice Studio</h1>
           <div id="header-mod-sub" class="brand-sub">Jody Fisher &amp; Berklee Guide-Tone Voice-Leading System</div>
         </div>
+
+        <div class="header-controls">
+          <button id="btn-view-mode" class="btn-view-mode" onclick="toggleViewMode()" title="Switch between Clean Simple View and Full Studio Controls (Shortcut: V)">
+            🎛️ Full Studio (V)
+          </button>
+
+          <button class="btn-roadmap" onclick="toggleRoadmapModal()" title="View Full 8-Module Jazz Guitar Curriculum (R)">
+            🗺️ 8-Module Roadmap (R)
+          </button>
+
+          <button class="btn-ai-coach" onclick="toggleAiDrawer()" title="Ask the Context-Aware AI Jazz Guitar Coach (A)">
+            🤖 AI Jazz Coach (A)
+          </button>
+
+          <div class="ctrl-group" title="UI zoom scale for comfortable reading with guitar in lap">
+            <span class="ctrl-label">Zoom:</span>
+            <button id="zoom-100" class="zoom-btn active" onclick="setUiScale(16)">100%</button>
+            <button id="zoom-115" class="zoom-btn" onclick="setUiScale(18.5)">115%</button>
+            <button id="zoom-130" class="zoom-btn" onclick="setUiScale(21)">130%</button>
+          </div>
+
+          <button class="icon-btn" onclick="requestAppFullscreen()" title="Toggle Fullscreen (F11)">⛶</button>
+        </div>
       </div>
 
-      <div class="header-controls">
-        <button id="btn-view-mode" class="btn-view-mode" onclick="toggleViewMode()" title="Switch between Clean Simple View and Full Studio Controls (Shortcut: V)">
-          🎛️ Full Studio (V)
-        </button>
+      <div class="header-selectors-grid">
+        <div class="ctrl-group selector-slot slot-block" title="Select Daily Practice Block (Shortcuts: 1–4)">
+          <span class="ctrl-label">Block:</span>
+          <select id="select-block" class="select-studio" onchange="selectBlock(this.value)"></select>
+        </div>
 
-        <button class="btn-roadmap" onclick="toggleRoadmapModal()" title="View Full 8-Module Jazz Guitar Curriculum (R)">
-          🗺️ 8-Module Roadmap (R)
-        </button>
+        <div class="ctrl-group selector-slot slot-drill" title="Select Voicing / Position Family Drill">
+          <span id="drill-select-label" class="ctrl-label">Drill:</span>
+          <select id="select-module" class="select-studio" onchange="selectModule(this.value)"></select>
+        </div>
 
-        <button class="btn-ai-coach" onclick="toggleAiDrawer()" title="Ask the Context-Aware AI Jazz Guitar Coach (A)">
-          🤖 AI Jazz Coach (A)
-        </button>
-
-        <div id="pos-strategy-wrap" class="ctrl-group" title="Fretboard position strategy across the 12 keys">
+        <div id="pos-strategy-wrap" class="ctrl-group selector-slot slot-neck" title="Fretboard position strategy across the 12 keys">
           <span class="ctrl-label">Neck:</span>
           <select id="select-pos-mode" class="select-studio" onchange="setPosMode(this.value)">
             <option value="slide">Slide Single Grip (Drop-3 Form A • Frets 0–13)</option>
             <option value="zone">Stay in One Zone (6th / 5th Str Alternating)</option>
           </select>
         </div>
-
-        <div class="ctrl-group" title="UI zoom scale for comfortable reading with guitar in lap">
-          <span class="ctrl-label">Zoom:</span>
-          <button id="zoom-100" class="zoom-btn active" onclick="setUiScale(16)">100%</button>
-          <button id="zoom-115" class="zoom-btn" onclick="setUiScale(18.5)">115%</button>
-          <button id="zoom-130" class="zoom-btn" onclick="setUiScale(21)">130%</button>
-        </div>
-
-        <button class="icon-btn" onclick="requestAppFullscreen()" title="Toggle Fullscreen (F11)">⛶</button>
       </div>
     </header>
 
-    <!-- Collapsible Key & Circle Loop Drawer (Collapsed by Default, Opens via Right Arrow) -->
-    <section id="circle-panel" class="circle-panel">
+    <!-- Compact Side-by-Side Collapsible Drawers (Expand Full-Width When Opened) -->
+    <div class="compact-drawers-row">
+      <!-- Collapsible Key & Circle Loop Drawer (Collapsed by Default, Opens via Right Arrow) -->
+      <section id="circle-panel" class="circle-panel">
       <div class="circle-drawer-header" onclick="toggleCircleDrawer()" title="Click to expand or collapse Key & Circle Loop settings">
         <div class="circle-summary-left">
           <span id="circle-collapsed-badge" class="circle-mode-badge">🔄 12-Key Circle</span>
@@ -69,7 +74,7 @@
         </div>
 
         <button id="btn-circle-drawer" type="button" class="btn-drawer-arrow" onclick="event.stopPropagation(); toggleCircleDrawer();" aria-expanded="false" title="Show / Hide Single Key & 12-Key Circle Loop controls">
-          <span id="circle-drawer-label">Key &amp; Loop Settings</span>
+          <span id="circle-drawer-label">Loop Options</span>
           <span id="circle-drawer-arrow" class="drawer-chevron">▼</span>
         </button>
       </div>
@@ -154,7 +159,7 @@
           </button>
 
           <span id="judge-collapsed-hint" class="judge-collapsed-hint">
-            Plug in your guitar &amp; enable <strong>Auto-Judge (J)</strong> to grade 4-bar choruses and auto-advance reps &amp; Circle keys.
+            Enable to grade choruses &amp; auto-advance reps/keys
           </span>
 
           <div class="ctrl-group judge-active-only" title="Select your audio interface guitar input (WASAPI low-latency shared mode)">
@@ -226,6 +231,7 @@
         </div>
       </div>
     </section>
+    </div>
 
     <!-- Main Studio Command Deck -->
     <section class="deck-grid">
