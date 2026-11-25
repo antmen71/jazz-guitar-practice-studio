@@ -18,26 +18,26 @@
         </div>
 
         <div class="header-controls">
-          <button id="btn-view-mode" class="btn-view-mode" onclick="toggleViewMode()" title="Switch between Clean Simple View and Full Studio Controls (Shortcut: V)">
-            🎛️ Full Studio (V)
-          </button>
-
           <button class="btn-roadmap" onclick="toggleRoadmapModal()" title="View Full 8-Module Jazz Guitar Curriculum (R)">
-            🗺️ 8-Module Roadmap (R)
+            🗺️ <span class="portrait-hide-sub">8-Module </span>Roadmap<span class="portrait-hide-sub"> (R)</span>
           </button>
 
           <button class="btn-ai-coach" onclick="toggleAiDrawer()" title="Ask the Context-Aware AI Jazz Guitar Coach (A)">
-            🤖 AI Jazz Coach (A)
+            🤖 AI <span class="portrait-hide-sub">Jazz </span>Coach<span class="portrait-hide-sub"> (A)</span>
           </button>
 
-          <div class="ctrl-group" title="UI zoom scale for comfortable reading with guitar in lap">
+          <div class="ctrl-group zoom-select-group" title="UI zoom scale for comfortable reading with guitar in lap">
             <span class="ctrl-label">Zoom:</span>
-            <button id="zoom-100" class="zoom-btn active" onclick="setUiScale(16)">100%</button>
-            <button id="zoom-115" class="zoom-btn" onclick="setUiScale(18.5)">115%</button>
-            <button id="zoom-130" class="zoom-btn" onclick="setUiScale(21)">130%</button>
+            <select id="select-zoom" class="select-studio select-zoom" onchange="setUiScale(Number(this.value))">
+              <option value="14.5">90%</option>
+              <option value="16" selected>100%</option>
+              <option value="18.5">115%</option>
+              <option value="21">130%</option>
+            </select>
           </div>
 
-          <button class="icon-btn" onclick="requestAppFullscreen()" title="Toggle Fullscreen (F11)">⛶</button>
+          <button id="btn-portrait-916" class="icon-btn" onclick="togglePortrait916()" title="Resize window to exact 9:16 vertical ratio for OBS Reels/Shorts recording">📱 9:16</button>
+          <button id="btn-fullscreen" class="icon-btn" onclick="requestAppFullscreen()" title="Toggle Fullscreen (F11)">⛶</button>
         </div>
       </div>
 
@@ -137,15 +137,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Visual 12-Key Ring Strip -->
-        <div id="key-ring-grid" class="key-ring-grid"></div>
-
-        <!-- Live Circle Telemetry & Mode Status -->
-        <div id="circle-telemetry" class="circle-live-status">
-          <span id="circle-progress-text"></span>
-          <span id="next-key-alert" class="next-key-alert"></span>
-        </div>
       </div>
     </section>
 
@@ -235,9 +226,25 @@
 
     <!-- Main Studio Command Deck -->
     <section class="deck-grid">
-      <!-- Left: Drill Mission + Rhythm Submode + 4-Bar Progression -->
-      <div class="panel-card">
-        <div>
+      <!-- Left: 12-Key Circle & Key Navigator (Always Visible & Clickable) -->
+      <div id="left-deck-card" class="panel-card">
+        <div class="key-deck-header">
+          <div class="key-deck-title-group">
+            <strong style="font-size:0.94rem;color:#fff;">12-Key Circle &amp; Position Map</strong>
+            <span class="portrait-hide-sub" style="font-size:0.78rem;color:var(--text-muted);">(Click any key to jump)</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:0.4rem;">
+            <button class="btn-secondary btn-tempo-quick" onclick="skipToNextKey()" title="Advance to the next key in the Circle (Shortcut: N)">⏭ Next Key (N)</button>
+            <button id="btn-drill-guide" class="btn-drawer-arrow" onclick="toggleDrillGuide()" aria-expanded="false" title="Show or hide Drill Instructions &amp; Block 1 Comping Feel">
+              <span>Drill Info</span>
+              <span class="drawer-chevron">▼</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Optional Collapsible Drill Info & Block 1 Comping Feel (Hidden by default) -->
+        <div id="drill-guide-drawer" class="drill-guide-drawer">
           <div class="drill-header">
             <h2 id="drill-title" class="drill-title"></h2>
             <span id="drill-goal-badge" class="goal-pill"></span>
@@ -245,113 +252,132 @@
           <p id="drill-purpose" class="drill-purpose"></p>
           <div id="drill-howto" class="drill-howto"></div>
 
-          <!-- Block 1 Sub-Rhythm Selector -->
           <div id="b1-rhythm-bar" class="submode-bar">
             <span class="ctrl-label" style="font-size:0.83rem;">Block 1 Comping Feel:</span>
             <button id="btn-rhythm-four" class="submode-btn" onclick="setB1Rhythm('four')">
-              Stage 1 (First 15m): Four-to-the-Bar (1-2-3-4)
+              Four-to-the-Bar (1-2-3-4)
             </button>
             <button id="btn-rhythm-charleston" class="submode-btn active" onclick="setB1Rhythm('charleston')">
-              Stage 2 (Last 30m): Charleston Rhythm (Beat 1 &amp; 2-&amp;)
+              Charleston Rhythm (Beat 1 &amp; 2-&amp;)
             </button>
           </div>
         </div>
 
-        <div class="bars-section">
+        <!-- Visual 12-Key Ring Grid (6x2 Balanced Studio Matrix) -->
+        <div id="key-ring-grid" class="key-ring-grid"></div>
+
+        <!-- Live Circle Telemetry & Mode Status -->
+        <div id="circle-telemetry" class="circle-live-status">
+          <span id="circle-progress-text"></span>
+          <span id="next-key-alert" class="next-key-alert"></span>
+        </div>
+      </div>
+
+      <!-- Right Stack: [1] 4-Bar ii-V-I Progression (Top) + [2] Tempo & Transport Deck (Bottom, near Fretboard) -->
+      <div class="deck-right-stack">
+        <div id="progression-deck-card" class="panel-card bars-section">
           <div class="bars-header">
-            <span><strong>4-Bar ii–V–I Progression</strong> (Click any chord card to audition voicing)</span>
+            <span><strong>4-Bar ii–V–I Progression</strong> <span class="portrait-hide-sub">(Click card to audition)</span></span>
             <span id="feel-readout" style="font-family:Consolas,monospace;font-weight:700;">4/4 Jazz Swing (62%/38%)</span>
           </div>
           <div id="bar-cards" class="bars-grid"></div>
         </div>
-      </div>
 
-      <!-- Right: Timer + BPM Graduation Ladder + Audio Mixer -->
-      <div class="panel-card">
-        <div class="timer-row">
-          <div>
-            <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;">BLOCK PRACTICE TIMER</div>
-            <div id="timer-display" class="timer-readout">45:00</div>
-          </div>
-          <div style="display:flex;gap:0.5rem;">
-            <button id="btn-timer" class="btn-secondary" onclick="toggleTimer()">⏱ Start Timer (T)</button>
-            <button class="btn-secondary" onclick="resetTimer()">Reset</button>
-          </div>
-        </div>
+        <div id="right-deck-card" class="panel-card">
+          <div class="tempo-bar-row">
+            <div class="tempo-bar-left">
+              <button class="btn-secondary btn-tempo-quick" onclick="tapTempo()" title="Tap repeatedly in rhythm to set tempo (Shortcut: T)">👆 Tap<span class="portrait-hide-sub"> (T)</span></button>
+              <div class="tempo-stepper-pill">
+                <button class="tempo-step-btn" onclick="adjustBpm(-5)" title="Decrease tempo by 5 BPM (↓)">−5</button>
+                <span id="bpm-readout-compact" class="tempo-bar-bpm">65 BPM</span>
+                <button class="tempo-step-btn" onclick="adjustBpm(5)" title="Increase tempo by 5 BPM (↑)">+5</button>
+              </div>
+              <button id="btn-rep-quick" class="btn-clean btn-rep-quick" onclick="markCleanRep()" title="Log 1 clean 4-bar chorus (Enter)">✓ Rep<span class="portrait-hide-sub"> (+1)</span></button>
+            </div>
 
-        <div class="bpm-box">
-          <div class="bpm-top">
-            <span id="bpm-ladder-label" style="font-size:0.88rem;font-weight:800;">BPM Ladder (3 Clean Reps = +5 BPM)</span>
-            <div style="display:flex;align-items:center;gap:0.32rem;">
-              <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="tapTempo()" title="Tap repeatedly in rhythm to set tempo">👆 Tap</button>
-              <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="adjustBpm(-5)">-5</button>
-              <span id="bpm-readout" class="bpm-big">65 BPM</span>
-              <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="adjustBpm(5)">+5</button>
+            <button id="btn-timer-options" class="btn-drawer-arrow" onclick="toggleDeckOptions()" aria-expanded="false" title="Show or hide BPM Slider, Beat Pads, Clean Reps &amp; Audio Mixer">
+              <span>Mixer<span class="portrait-hide-sub"> &amp; Beats</span></span>
+              <span class="drawer-chevron">▼</span>
+            </button>
+          </div>
+
+          <!-- Collapsible Mixer & BPM Ladder Drawer (Hidden by default) -->
+          <div id="deck-options-body" class="deck-options-body">
+            <div class="bpm-box">
+              <div class="bpm-top">
+                <span id="bpm-ladder-label" style="font-size:0.88rem;font-weight:800;">BPM Ladder (3 Clean Reps = +5 BPM)</span>
+                <div style="display:flex;align-items:center;gap:0.32rem;">
+                  <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="tapTempo()" title="Tap repeatedly in rhythm to set tempo">👆 Tap</button>
+                  <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="adjustBpm(-5)">-5</button>
+                  <span id="bpm-readout" class="bpm-big">65 BPM</span>
+                  <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="adjustBpm(5)">+5</button>
+                </div>
+              </div>
+
+              <input id="bpm-slider" class="bpm-slider" type="range" min="45" max="160" value="65" oninput="setBpm(this.value)" />
+
+              <!-- Live 4-Beat Visual Metronome Pads -->
+              <div class="beat-pads-row">
+                <div id="beat-pad-1" class="beat-pad">1</div>
+                <div id="beat-pad-2" class="beat-pad">2 (Hi-Hat)</div>
+                <div id="beat-pad-3" class="beat-pad">3</div>
+                <div id="beat-pad-4" class="beat-pad">4 (Hi-Hat)</div>
+              </div>
+
+              <div class="rep-row">
+                <div id="rep-dots" class="rep-dots"></div>
+                <div style="display:flex;gap:0.45rem;">
+                  <button class="btn-stumble" onclick="markStumble()" title="Reset streak or drop 5 BPM if you stumbled (Backspace)">✗ Stumbled</button>
+                  <button class="btn-clean" onclick="markCleanRep()" title="Log 1 clean 4-bar chorus (Enter)">✓ Clean Rep (+1)</button>
+                </div>
+              </div>
+              <div id="grad-status" class="grad-status"></div>
+            </div>
+
+            <div class="mixer-grid">
+              <label class="mix-toggle">
+                <input id="chk-lead" type="checkbox" checked onchange="leadEnabled = this.checked" />
+                <span>Guide Guitar</span>
+              </label>
+              <label class="mix-toggle">
+                <input id="chk-comp" type="checkbox" onchange="compEnabled = this.checked" />
+                <span>Jazz Comping</span>
+              </label>
+              <label class="mix-toggle">
+                <input id="chk-bass" type="checkbox" checked onchange="bassEnabled = this.checked" />
+                <span>Walking Bass</span>
+              </label>
+              <label class="mix-toggle">
+                <input id="chk-swing" type="checkbox" checked onchange="swingEnabled = this.checked; updateFeelLabel();" />
+                <span>Triplet Swing</span>
+              </label>
+              <label class="mix-toggle" title="Gives a 1-bar (1-2-3-4) count-in when pressing Start so you can place your hands on the guitar">
+                <input id="chk-countin" type="checkbox" checked onchange="countInEnabled = this.checked" />
+                <span>1-Bar Count-In</span>
+              </label>
+              <label class="mix-toggle" style="justify-content:space-between;" title="Metronome click volume">
+                <span>Click</span>
+                <input id="slider-metro-vol" type="range" min="0" max="150" value="100" oninput="setMetroVol(this.value / 100)" style="width:4.2rem;accent-color:var(--accent-gold);" />
+              </label>
+              <label class="mix-toggle" style="justify-content:space-between;" title="Master output volume">
+                <span>Master</span>
+                <input type="range" min="0" max="100" value="82" oninput="masterVol = this.value / 100" style="width:4.2rem;accent-color:var(--accent-blue);" />
+              </label>
             </div>
           </div>
 
-          <input id="bpm-slider" class="bpm-slider" type="range" min="45" max="160" value="65" oninput="setBpm(this.value)" />
+          <div class="deck-transport-footer">
+            <div id="countin-banner" class="countin-banner"></div>
 
-          <!-- Live 4-Beat Visual Metronome Pads -->
-          <div class="beat-pads-row">
-            <div id="beat-pad-1" class="beat-pad">1</div>
-            <div id="beat-pad-2" class="beat-pad">2 (Hi-Hat)</div>
-            <div id="beat-pad-3" class="beat-pad">3</div>
-            <div id="beat-pad-4" class="beat-pad">4 (Hi-Hat)</div>
-          </div>
-
-          <div class="rep-row">
-            <div id="rep-dots" class="rep-dots"></div>
-            <div style="display:flex;gap:0.45rem;">
-              <button class="btn-stumble" onclick="markStumble()" title="Reset streak or drop 5 BPM if you stumbled (Backspace)">✗ Stumbled</button>
-              <button class="btn-clean" onclick="markCleanRep()" title="Log 1 clean 4-bar chorus (Enter)">✓ Clean Rep (+1)</button>
+            <div class="transport-row">
+              <button id="btn-metro-only" class="btn-secondary btn-metro" onclick="toggleMetroOnly()" title="Run standalone metronome without backing instruments (M)">
+                🥁 Metronome Only (M)
+              </button>
+              <button id="btn-play" class="btn-play" onclick="togglePlay()">
+                <span id="play-icon">▶</span>
+                <span id="play-label">Start Backing &amp; Drill (Space)</span>
+              </button>
             </div>
-          </div>
-          <div id="grad-status" class="grad-status"></div>
-        </div>
-
-        <div>
-          <div class="mixer-grid">
-            <label class="mix-toggle">
-              <input id="chk-lead" type="checkbox" checked onchange="leadEnabled = this.checked" />
-              <span>Guide Guitar</span>
-            </label>
-            <label class="mix-toggle">
-              <input id="chk-comp" type="checkbox" onchange="compEnabled = this.checked" />
-              <span>Jazz Comping</span>
-            </label>
-            <label class="mix-toggle">
-              <input id="chk-bass" type="checkbox" checked onchange="bassEnabled = this.checked" />
-              <span>Walking Bass</span>
-            </label>
-            <label class="mix-toggle">
-              <input id="chk-swing" type="checkbox" checked onchange="swingEnabled = this.checked; updateFeelLabel();" />
-              <span>Triplet Swing</span>
-            </label>
-            <label class="mix-toggle" title="Gives a 1-bar (1-2-3-4) count-in when pressing Start so you can place your hands on the guitar">
-              <input id="chk-countin" type="checkbox" checked onchange="countInEnabled = this.checked" />
-              <span>1-Bar Count-In</span>
-            </label>
-            <label class="mix-toggle" style="justify-content:space-between;" title="Metronome click volume">
-              <span>Click</span>
-              <input id="slider-metro-vol" type="range" min="0" max="150" value="100" oninput="setMetroVol(this.value / 100)" style="width:4.2rem;accent-color:var(--accent-gold);" />
-            </label>
-            <label class="mix-toggle" style="justify-content:space-between;" title="Master output volume">
-              <span>Master</span>
-              <input type="range" min="0" max="100" value="82" oninput="masterVol = this.value / 100" style="width:4.2rem;accent-color:var(--accent-blue);" />
-            </label>
-          </div>
-
-          <div id="countin-banner" class="countin-banner" style="margin-top:0.45rem;"></div>
-
-          <div class="transport-row">
-            <button id="btn-metro-only" class="btn-secondary btn-metro" onclick="toggleMetroOnly()" title="Run standalone metronome without backing instruments (M)">
-              🥁 Metronome Only (M)
-            </button>
-            <button id="btn-play" class="btn-play" onclick="togglePlay()">
-              <span id="play-icon">▶</span>
-              <span id="play-label">Start Backing &amp; Drill (Space)</span>
-            </button>
           </div>
         </div>
       </div>
@@ -427,6 +453,7 @@
         <span><kbd>C</kbd> Single / Circle</span>
         <span><kbd>N</kbd> Next Key</span>
         <span><kbd>M</kbd> Metronome</span>
+        <span><kbd>T</kbd> Tap Tempo</span>
         <span><kbd>Enter</kbd> ✓ Clean Rep</span>
         <span><kbd>↑</kbd> <kbd>↓</kbd> ±5 BPM</span>
         <span><kbd>Z</kbd> Box Zoom</span>

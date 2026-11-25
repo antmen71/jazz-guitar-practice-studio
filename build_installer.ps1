@@ -1,14 +1,14 @@
-﻿# Reproducible Windows Release Builder for Jazz Guitar Practice Studio v1.1.0
+﻿# Reproducible Windows Release Builder for Jazz Guitar Practice Studio v1.2.0
 # Builds:
 #   1) Standalone onedir folder (dist\JazzGuitarStudio) -> compiled into Setup.exe
-#   2) Single-file crash-proof Portable EXE (installer_output\JazzGuitarPracticeStudio_Portable_v1.1.0_win64.exe)
-#   3) Portable ZIP containing the single-file EXE (installer_output\JazzGuitarPracticeStudio_Portable_v1.1.0_win64.zip)
-#   4) Native Windows Setup Wizard (installer_output\JazzGuitarPracticeStudio_Setup_v1.1.0.exe)
+#   2) Single-file crash-proof Portable EXE (installer_output\JazzGuitarPracticeStudio_Portable_v1.2.0_win64.exe)
+#   3) Portable ZIP containing the single-file EXE (installer_output\JazzGuitarPracticeStudio_Portable_v1.2.0_win64.zip)
+#   4) Native Windows Setup Wizard (installer_output\JazzGuitarPracticeStudio_Setup_v1.2.0.exe)
 
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
-$version = "1.1.0"
+$version = "1.2.0"
 New-Item -ItemType Directory -Force -Path (Join-Path $PSScriptRoot "installer_output") | Out-Null
 Remove-Item (Join-Path $PSScriptRoot "installer_output\*") -Force -ErrorAction SilentlyContinue
 

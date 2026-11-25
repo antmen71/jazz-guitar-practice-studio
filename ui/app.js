@@ -270,7 +270,6 @@ let circleEndAction = 'plus5';   // 'plus5' | 'loop' | 'stop'
 let labelMode = 'note';
 let zoomBoxOnly = false;
 let uiScalePx = 16;
-let uiViewMode = 'studio'; // 'simple' | 'studio'
 let circleDrawerOpen = false; // Collapsed by default; opens via right arrow button
 
 let bpm = 65;
@@ -369,7 +368,6 @@ function syncSettingsToCache() {
   appStateCache.lastBlockId = activeBlockId;
   appStateCache.lastKeyId = currentKeyId;
   appStateCache.uiScalePx = uiScalePx;
-  appStateCache.uiViewMode = uiViewMode;
   appStateCache.zoomBoxOnly = zoomBoxOnly;
   appStateCache.b1RhythmMode = b1RhythmMode;
   appStateCache.posMode = posMode;
@@ -431,31 +429,46 @@ function getBlockObj() {
   return arr.find(b => b.id === activeBlockId) || arr[0];
 }
 
-// Unified Layout Resolver across Modules 1, 2, 3, 4 & Both Neck Strategies!
+// Unified Layout Resolver across Modules 1, 2, 3, 4 & All 3 Neck Strategies (slide / zone / low)!
 function getKeyLayout(keyObj) {
   if (activeModuleId === 'm2') {
     const r5 = ((keyObj.pc - 9) + 12) % 12;
+    const u5 = (keyObj.pc + 10) % 12;
     if (posMode === 'zone') {
-      // Stay in Central Zone (Frets 2–12): alternate Root/2nd (D2_5) & 2nd/Root (D2_5_INV) on 5-4-3-2!
+      // Stay in Central Zone (Frets 3–10): alternate Root/2nd (D2_5) & 2nd/Root (D2_5_INV) on 5-4-3-2!
       if (r5 >= 3 && r5 <= 7) return { shape: 'D2_5', r: r5 };
-      const u5 = (keyObj.pc + 10) % 12;
       return { shape: 'D2_5_INV', r: u5 };
+    }
+    if (posMode === 'low') {
+      // Lower Neck Zone (Frets 0–7): pick whichever 5-4-3-2 inversion sits lower on the neck (with u5 >= 1 for w-1)!
+      if (r5 <= 5 && (u5 < 1 || r5 <= u5)) return { shape: 'D2_5', r: r5 };
+      if (u5 >= 1 && u5 <= 6) return { shape: 'D2_5_INV', r: u5 };
+      return { shape: 'D2_5', r: r5 };
     }
     return { shape: 'D2_5', r: r5 };
   }
   if (activeModuleId === 'm3') {
     const u4 = (keyObj.pc + 5) % 12;
+    const w4 = (keyObj.pc + 10) % 12;
     if (posMode === 'zone') {
-      // Stay in Central Zone (Frets 2–11): alternate 2nd/Root (D2_4) & Root/2nd (D2_4_INV) on 4-3-2-1!
+      // Stay in Central Zone (Frets 3–10): alternate 2nd/Root (D2_4) & Root/2nd (D2_4_INV) on 4-3-2-1!
       if (u4 >= 3 && u4 <= 8) return { shape: 'D2_4', r: u4 };
-      const w4 = (keyObj.pc + 10) % 12;
       return { shape: 'D2_4_INV', r: w4 };
+    }
+    if (posMode === 'low') {
+      // Lower Treble Zone (Frets 0–7): pick whichever 4-3-2-1 inversion sits lower on the neck!
+      if (u4 <= w4 && u4 <= 6) return { shape: 'D2_4', r: u4 };
+      if (w4 <= 6) return { shape: 'D2_4_INV', r: w4 };
+      return { shape: 'D2_4', r: u4 };
     }
     return { shape: 'D2_4', r: u4 };
   }
   if (activeModuleId === 'm4') {
-    return posMode === 'slide' ? keyObj.lowZone : keyObj.zone;
+    if (posMode === 'low') return keyObj.lowZone;
+    if (posMode === 'slide') return keyObj.slide;
+    return keyObj.zone;
   }
+  if (posMode === 'low') return keyObj.lowZone;
   return posMode === 'zone' ? keyObj.zone : keyObj.slide;
 }
 
@@ -485,7 +498,7 @@ function getBoxBounds(layout) {
 
 function getShapeBadgeLabel(layout, keyObj) {
   if (activeBlockId !== 'b1') {
-    if (layout.shape === 'D2_5' || layout.shape === 'D2_5_INV') return `5th-STR DROP-2 BOX • ${keyObj.id} Major`;
+    if (layout.shape === 'D2_5' || layout.shape === 'D2_5_INV') return `5th-STR ROOT BOX • ${keyObj.id} Major`;
     if (layout.shape === 'D2_4' || layout.shape === 'D2_4_INV') return `TOP 4-STR (4-3-2-1) BOX • ${keyObj.id} Major`;
     if (layout.shape === 'B') return `5th-STR ZONE BOX • ${keyObj.id} Major`;
     return `6th-STR ROOT BOX • ${keyObj.id} Major`;
@@ -1982,7 +1995,7 @@ function uiLoop() {
     if (latest.bpmSync && latest.bpmSync !== bpm) {
       bpm = latest.bpmSync;
       document.getElementById('bpm-slider').value = bpm;
-      document.getElementById('bpm-readout').textContent = `${bpm} BPM`;
+      syncBpmReadouts();
       const b = getBlockObj();
       const cur = getBlockProgress(b.id);
       saveBlockProgress(b.id, bpm, cleanReps, cur.graduated || bpm >= b.goalBpm);
@@ -2053,7 +2066,7 @@ function uiLoop() {
   }
 }
 
-// --- Countdown Timer ---
+// --- Time Formatter (for Circle Minutes-per-Key Mode) ---
 function formatTimer(sec) {
   const sTotal = Math.max(0, Math.ceil(sec));
   const m = Math.floor(sTotal / 60);
@@ -2061,44 +2074,39 @@ function formatTimer(sec) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-window.toggleTimer = function() {
-  ensureAudio();
-  if (timerRunning) {
-    clearInterval(timerInterval);
-    timerRunning = false;
-    document.getElementById('btn-timer').textContent = '⏱ Resume (T)';
-  } else {
-    timerRunning = true;
-    document.getElementById('btn-timer').textContent = '⏸ Pause (T)';
-    timerInterval = setInterval(() => {
-      if (timerRemainingSec > 0) {
-        timerRemainingSec--;
-        document.getElementById('timer-display').textContent = formatTimer(timerRemainingSec);
-      } else {
-        clearInterval(timerInterval);
-        timerRunning = false;
-        document.getElementById('btn-timer').textContent = '✓ Time Complete';
-        playArchtopNote(60, audioCtx.currentTime, 0.6, 0.25);
-        playArchtopNote(64, audioCtx.currentTime + 0.18, 0.8, 0.25);
-      }
-    }, 1000);
-  }
+// --- Collapsible Right Deck Options & Left Drill Info ---
+let deckOptionsOpen = false;
+let drillGuideOpen = false;
+
+window.toggleDeckOptions = function(forceState) {
+  deckOptionsOpen = typeof forceState === 'boolean' ? forceState : !deckOptionsOpen;
+  const cardEl = document.getElementById('right-deck-card');
+  const btnEl = document.getElementById('btn-timer-options');
+  if (cardEl) cardEl.classList.toggle('open', deckOptionsOpen);
+  if (btnEl) btnEl.setAttribute('aria-expanded', String(deckOptionsOpen));
 };
 
-window.resetTimer = function() {
-  if (timerInterval) clearInterval(timerInterval);
-  timerRunning = false;
-  timerRemainingSec = getBlockObj().minutes * 60;
-  document.getElementById('timer-display').textContent = formatTimer(timerRemainingSec);
-  document.getElementById('btn-timer').textContent = '⏱ Start Timer (T)';
+window.toggleDrillGuide = function(forceState) {
+  drillGuideOpen = typeof forceState === 'boolean' ? forceState : !drillGuideOpen;
+  const leftEl = document.getElementById('left-deck-card');
+  const btnEl = document.getElementById('btn-drill-guide');
+  if (leftEl) leftEl.classList.toggle('guide-open', drillGuideOpen);
+  if (btnEl) btnEl.setAttribute('aria-expanded', String(drillGuideOpen));
 };
 
-// --- BPM & Graduation ---
+function syncBpmReadouts() {
+  const txt = `${bpm} BPM`;
+  const bigEl = document.getElementById('bpm-readout');
+  const compEl = document.getElementById('bpm-readout-compact');
+  if (bigEl) bigEl.textContent = txt;
+  if (compEl) compEl.textContent = txt;
+}
+
 window.setBpm = function(val) {
   bpm = Math.max(45, Math.min(160, Number(val) || 65));
   schedBpm = bpm;
   document.getElementById('bpm-slider').value = bpm;
-  document.getElementById('bpm-readout').textContent = `${bpm} BPM`;
+  syncBpmReadouts();
   const b = getBlockObj();
   const cur = getBlockProgress(b.id);
   saveBlockProgress(b.id, bpm, cleanReps, cur.graduated || bpm > b.goalBpm);
@@ -2171,30 +2179,103 @@ function renderTopDrillSelect() {
   document.getElementById('header-mod-title').textContent = curOpt.headerTitle;
   document.getElementById('header-mod-sub').textContent = curOpt.headerSub;
 
-  // Keep Neck Strategy selector visible across ALL 4 drills with module-specific neck options!
+  // Keep Neck Strategy selector visible & dynamically tailored to BOTH activeBlockId (b1..b4) AND activeModuleId (m1..m4)!
   const posWrap = document.getElementById('pos-strategy-wrap');
   const posSel = document.getElementById('select-pos-mode');
   if (posWrap) posWrap.style.display = 'flex';
   if (posSel) {
-    const neckOptionsByMod = {
-      m1: [
-        { val: 'slide', txt: 'Slide Single Grip (Drop-3 Form A • Frets 0–13)' },
-        { val: 'zone',  txt: 'Stay in Central Zone (6th/5th-Str Alt • Frets 4–10)' }
-      ],
-      m2: [
-        { val: 'slide', txt: 'Slide Single Grip (5-4-3-2 Root/2nd • Frets 0–11)' },
-        { val: 'zone',  txt: 'Stay in Central Zone (5-4-3-2 Dual Inv • Frets 2–12)' }
-      ],
-      m3: [
-        { val: 'slide', txt: 'Slide Single Grip (4-3-2-1 2nd/Root • Frets 0–11)' },
-        { val: 'zone',  txt: 'Stay in Central Zone (4-3-2-1 Dual Inv • Frets 2–11)' }
-      ],
-      m4: [
-        { val: 'zone',  txt: 'Central Neck Zone (6th & 5th Str • Frets 4–10)' },
-        { val: 'slide', txt: 'Lower Neck Zone (6th & 5th Str • Frets 0–8)' }
-      ]
+    const neckMatrix = {
+      b1: {
+        m1: [
+          { val: 'slide', txt: 'Slide Drop-3 Grip (6-4-3-2 • Frets 0–13)' },
+          { val: 'zone',  txt: 'Central Comping Zone (6th/5th Alt • Frets 4–10)' },
+          { val: 'low',   txt: 'Lower Comping Zone (Open–8th Fret)' }
+        ],
+        m2: [
+          { val: 'slide', txt: 'Slide Drop-2 Grip (5-4-3-2 Root/2nd • Frets 0–11)' },
+          { val: 'zone',  txt: 'Central Drop-2 Zone (5-4-3-2 Dual Inv • Frets 3–10)' },
+          { val: 'low',   txt: 'Lower Drop-2 Zone (5-4-3-2 • Frets 0–7)' }
+        ],
+        m3: [
+          { val: 'slide', txt: 'Slide Treble Drop-2 (4-3-2-1 2nd/Root • Frets 0–11)' },
+          { val: 'zone',  txt: 'Central Treble Zone (4-3-2-1 Dual Inv • Frets 3–10)' },
+          { val: 'low',   txt: 'Lower Treble Zone (4-3-2-1 • Frets 0–7)' }
+        ],
+        m4: [
+          { val: 'zone',  txt: 'Central Cross-Comping Zone (6th/5th • Frets 4–10)' },
+          { val: 'low',   txt: 'Lower Cross-Comping Zone (6th/5th • Frets 0–8)' },
+          { val: 'slide', txt: 'Full-Neck 6th-Str Drop-3 Reference (Frets 0–13)' }
+        ]
+      },
+      b2: {
+        m1: [
+          { val: 'slide', txt: 'Slide 6th-Str Arpeggio Box (b7→3 • Frets 0–13)' },
+          { val: 'zone',  txt: 'Central Arpeggio Zone (6th/5th Boxes • Frets 4–10)' },
+          { val: 'low',   txt: 'Lower Arpeggio Zone (Open–8th Fret)' }
+        ],
+        m2: [
+          { val: 'slide', txt: 'Slide 5th-Str Arpeggio Box (b7→3 • Frets 0–11)' },
+          { val: 'zone',  txt: 'Central 5th-Str Arpeggio Zone (Dual Boxes • Frets 3–10)' },
+          { val: 'low',   txt: 'Lower 5th-Str Arpeggio Zone (Frets 0–7)' }
+        ],
+        m3: [
+          { val: 'slide', txt: 'Slide Top 4-Str Arpeggio Cluster (Frets 0–11)' },
+          { val: 'zone',  txt: 'Central Top 4-Str Arpeggio Zone (Frets 3–10)' },
+          { val: 'low',   txt: 'Lower Top 4-Str Arpeggio Zone (Frets 0–7)' }
+        ],
+        m4: [
+          { val: 'zone',  txt: 'Central 12-Key Arpeggio Zone (Frets 4–10)' },
+          { val: 'low',   txt: 'Lower 12-Key Arpeggio Zone (Frets 0–8)' },
+          { val: 'slide', txt: 'Full-Neck 6th-Str Arpeggio Boxes (Frets 0–13)' }
+        ]
+      },
+      b3: {
+        m1: [
+          { val: 'slide', txt: 'Slide 6th-Str Modal Scale Box (Frets 0–13)' },
+          { val: 'zone',  txt: 'Central Modal Scale Zone (6th/5th • Frets 4–10)' },
+          { val: 'low',   txt: 'Lower Modal Scale Zone (Open–8th Fret)' }
+        ],
+        m2: [
+          { val: 'slide', txt: 'Slide 5th-Str Modal Scale Box (Frets 0–11)' },
+          { val: 'zone',  txt: 'Central 5th-Str Modal Zone (Dual Patterns • Frets 3–10)' },
+          { val: 'low',   txt: 'Lower 5th-Str Modal Zone (Frets 0–7)' }
+        ],
+        m3: [
+          { val: 'slide', txt: 'Slide Top 4-Str Lydian #4 Pattern (Frets 0–11)' },
+          { val: 'zone',  txt: 'Central Top 4-Str Modal Zone (Frets 3–10)' },
+          { val: 'low',   txt: 'Lower Top 4-Str Modal Zone (Frets 0–7)' }
+        ],
+        m4: [
+          { val: 'zone',  txt: 'Central 12-Key Modal Scale Zone (Frets 4–10)' },
+          { val: 'low',   txt: 'Lower 12-Key Modal Scale Zone (Frets 0–8)' },
+          { val: 'slide', txt: 'Full-Neck 6th-Str Modal Boxes (Frets 0–13)' }
+        ]
+      },
+      b4: {
+        m1: [
+          { val: 'slide', txt: 'Slide 6th-Str Guide-Tone Solo Box (Frets 0–13)' },
+          { val: 'zone',  txt: 'Central Trio Soloing Zone (6th/5th • Frets 4–10)' },
+          { val: 'low',   txt: 'Lower Trio Soloing Zone (Open–8th Fret)' }
+        ],
+        m2: [
+          { val: 'slide', txt: 'Slide 5th-Str Guide-Tone Solo Box (Frets 0–11)' },
+          { val: 'zone',  txt: 'Central 5th-Str Soloing Zone (Frets 3–10)' },
+          { val: 'low',   txt: 'Lower 5th-Str Soloing Zone (Frets 0–7)' }
+        ],
+        m3: [
+          { val: 'slide', txt: 'Slide Top 4-Str Solo + Chord Stabs (Frets 0–11)' },
+          { val: 'zone',  txt: 'Central Top 4-Str Soloing Zone (Frets 3–10)' },
+          { val: 'low',   txt: 'Lower Top 4-Str Soloing Zone (Frets 0–7)' }
+        ],
+        m4: [
+          { val: 'zone',  txt: 'Central 12-Key Trio Soloing Zone (Frets 4–10)' },
+          { val: 'low',   txt: 'Lower 12-Key Trio Soloing Zone (Frets 0–8)' },
+          { val: 'slide', txt: 'Full-Neck 6th-Str Soloing Boxes (Frets 0–13)' }
+        ]
+      }
     };
-    const mOpts = neckOptionsByMod[activeModuleId] || neckOptionsByMod.m1;
+    const blkMap = neckMatrix[activeBlockId] || neckMatrix.b1;
+    const mOpts = blkMap[activeModuleId] || blkMap.m1;
     posSel.innerHTML = mOpts.map(o =>
       `<option value="${o.val}" ${o.val === posMode ? 'selected' : ''}>${o.txt}</option>`
     ).join('');
@@ -2217,7 +2298,6 @@ window.selectModule = function(modId) {
   document.getElementById('chk-lead').checked = leadEnabled;
   document.getElementById('chk-comp').checked = compEnabled;
 
-  resetTimer();
   activeBarIdx = 0;
   activeEventIdx = -1;
   persistState();
@@ -2273,7 +2353,7 @@ function renderRoadmapCards() {
 
 // --- Circle & Strategy Setters ---
 window.setPosMode = function(mode) {
-  posMode = (mode === 'zone') ? 'zone' : 'slide';
+  posMode = ['slide', 'zone', 'low'].includes(mode) ? mode : 'slide';
   document.getElementById('select-pos-mode').value = posMode;
   persistState();
   buildBlockEvents();
@@ -2340,11 +2420,12 @@ window.setCircleEndAction = function(act) {
 
 // --- View / Mode Controls ---
 window.setUiScale = function(px) {
-  uiScalePx = px;
-  document.documentElement.style.setProperty('--ui-scale', `${px}px`);
-  document.getElementById('zoom-100').classList.toggle('active', px === 16);
-  document.getElementById('zoom-115').classList.toggle('active', px === 18.5);
-  document.getElementById('zoom-130').classList.toggle('active', px === 21);
+  const validScales = [14.5, 16, 18.5, 21];
+  const numPx = Number(px) || 16;
+  uiScalePx = validScales.includes(numPx) ? numPx : 16;
+  document.documentElement.style.setProperty('--ui-scale', `${uiScalePx}px`);
+  const zSel = document.getElementById('select-zoom');
+  if (zSel) zSel.value = String(uiScalePx);
   persistState();
 };
 
@@ -2356,24 +2437,55 @@ window.toggleBoxZoom = function() {
   renderFretboard();
 };
 
-function renderViewModeUI() {
-  const isSimple = uiViewMode === 'simple';
-  document.body.classList.toggle('simple-view-mode', isSimple);
-  const btn = document.getElementById('btn-view-mode');
-  if (btn) {
-    btn.classList.toggle('simple-active', isSimple);
-    btn.textContent = isSimple ? '🎛️ Full Studio (V)' : '✨ Simple View (V)';
-    btn.title = isSimple
-      ? 'Expand all studio controls, tab strip, timer, and 12-key grid (Shortcut: V)'
-      : 'Switch to clean, distraction-free Simple View (Shortcut: V)';
-  }
-}
+let prePortraitZoomBox = null;
+let prePortraitScalePx = null;
 
-window.toggleViewMode = function() {
-  uiViewMode = (uiViewMode === 'simple') ? 'studio' : 'simple';
-  renderViewModeUI();
-  persistState();
+window.togglePortrait916 = function() {
+  if (window.pywebview && window.pywebview.api && window.pywebview.api.toggle_portrait_916) {
+    window.pywebview.api.toggle_portrait_916().then(res => {
+      const btn = document.getElementById('btn-portrait-916');
+      const isP = Boolean(res && res.portrait);
+      document.body.classList.toggle('portrait-916', isP);
+      if (btn) {
+        btn.classList.toggle('active-916', isP);
+        btn.textContent = isP ? '🖥️ 16:9' : '📱 9:16';
+      }
+      if (isP) {
+        prePortraitZoomBox = zoomBoxOnly;
+        prePortraitScalePx = uiScalePx;
+        document.documentElement.style.setProperty('--ui-scale', '15px');
+        zoomBoxOnly = true;
+        document.getElementById('btn-box-zoom').classList.add('active');
+        document.getElementById('fretboard-section').classList.add('zoom-box-mode');
+        setTimeout(() => {
+          renderFretboard();
+          const progEl = document.getElementById('progression-deck-card');
+          if (progEl) {
+            const topY = Math.max(0, progEl.getBoundingClientRect().top + window.scrollY - 8);
+            window.scrollTo({ top: topY, behavior: 'smooth' });
+          }
+        }, 120);
+      } else {
+        if (prePortraitScalePx !== null) {
+          document.documentElement.style.setProperty('--ui-scale', `${prePortraitScalePx}px`);
+        }
+        if (prePortraitZoomBox !== null) {
+          zoomBoxOnly = prePortraitZoomBox;
+          document.getElementById('btn-box-zoom').classList.toggle('active', zoomBoxOnly);
+          document.getElementById('fretboard-section').classList.toggle('zoom-box-mode', zoomBoxOnly);
+        }
+        setTimeout(() => {
+          renderFretboard();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 120);
+      }
+    }).catch(() => {});
+  }
 };
+
+window.addEventListener('resize', () => {
+  renderFretboard();
+});
 
 window.requestAppFullscreen = function() {
   if (window.pywebview && window.pywebview.api && window.pywebview.api.toggle_fullscreen) {
@@ -2414,7 +2526,6 @@ window.selectBlock = function(bid) {
   document.getElementById('chk-comp').checked = compEnabled;
   document.getElementById('b1-rhythm-bar').style.display = (bid === 'b1') ? 'flex' : 'none';
 
-  resetTimer();
   activeBarIdx = 0;
   activeEventIdx = -1;
   persistState();
@@ -2642,10 +2753,10 @@ function renderBlockTabs() {
   const selEl = document.getElementById('select-block');
   if (!selEl) return;
   const fixedTitles = [
-    { id: 'b1', min: '45m', cat: 'Jazz Voicings & Comping' },
-    { id: 'b2', min: '60m', cat: 'Voice-Led 7th Arpeggios' },
-    { id: 'b3', min: '45m', cat: 'Modes & Lydian #4' },
-    { id: 'b4', min: '60m', cat: 'Jazz Trio Improvisation' }
+    { id: 'b1', cat: 'Jazz Voicings & Comping' },
+    { id: 'b2', cat: 'Voice-Led 7th Arpeggios' },
+    { id: 'b3', cat: 'Modes & Lydian #4' },
+    { id: 'b4', cat: 'Jazz Trio Improvisation' }
   ];
   selEl.innerHTML = fixedTitles.map((ft, idx) => {
     const active = ft.id === activeBlockId;
@@ -2659,7 +2770,7 @@ function renderBlockTabs() {
     const statusTxt = prog.graduated
       ? `🏆 Grad (${gradCount}/4)`
       : `${prog.bpm}/${bDef.goalBpm} BPM`;
-    return `<option value="${ft.id}" ${active ? 'selected' : ''}>[${idx + 1}] ${ft.cat} (${ft.min}) — ${statusTxt}</option>`;
+    return `<option value="${ft.id}" ${active ? 'selected' : ''}>[${idx + 1}] ${ft.cat} — ${statusTxt}</option>`;
   }).join('');
 }
 
@@ -2670,7 +2781,7 @@ function renderMission() {
   document.getElementById('drill-purpose').textContent = b.purpose;
   document.getElementById('drill-howto').textContent = b.howto;
   document.getElementById('bpm-slider').value = bpm;
-  document.getElementById('bpm-readout').textContent = `${bpm} BPM`;
+  syncBpmReadouts();
   document.getElementById('b1-rhythm-bar').style.display = (b.id === 'b1') ? 'flex' : 'none';
   document.getElementById('bpm-ladder-label').textContent = practiceLoopMode === 'circle'
     ? 'BPM Ladder (+5 BPM per 12-Key Lap or Manual)'
@@ -2714,10 +2825,11 @@ function renderBars() {
   ];
   document.getElementById('bar-cards').innerHTML = bars.map(b => {
     const on = b.idx === activeBarIdx;
+    const compactShape = String(b.shape || '').replace(/\s*-\s*/g, '-');
     return `<button onclick="onBarClick(${b.idx})" class="bar-card ${on ? 'active' : ''}">
       <div class="bar-num">BAR ${b.idx + 1} (${k.id} Major)</div>
       <div class="bar-chord">${b.chord}</div>
-      <div class="bar-shape">${b.shape}</div>
+      <div class="bar-shape">${compactShape}</div>
       <div class="bar-roman">${b.roman}</div>
     </button>`;
   }).join('');
@@ -2747,13 +2859,15 @@ function renderFretboard() {
   let fretStart = 0;
   let fretEnd = 15;
   if (zoomBoxOnly) {
-    const low = nextMin >= 0 ? Math.min(boxMin, nextMin) : boxMin;
-    const high = nextMax >= 0 ? Math.max(boxMax, nextMax) : boxMax;
-    fretStart = Math.max(0, low - 1);
-    fretEnd = Math.min(15, high + 1);
+    // Keep Focus Box Zoom locked strictly on the CURRENT active box so Bar 4 never jumps or clips the chord being played!
+    fretStart = Math.max(0, boxMin - 1);
+    fretEnd = Math.min(15, boxMax + 1);
   }
   const fretCount = fretEnd - fretStart + 1;
-  const gridCols = `64px repeat(${fretCount}, minmax(${zoomBoxOnly ? '78px' : '48px'}, 1fr))`;
+  const isNarrowPortrait = window.innerWidth <= 720;
+  const strColW = isNarrowPortrait ? '44px' : '64px';
+  const minFretW = zoomBoxOnly ? (isNarrowPortrait ? '0px' : '78px') : '48px';
+  const gridCols = `${strColW} repeat(${fretCount}, minmax(${minFretW}, 1fr))`;
 
   const boxMap = getBoxMapForBar(keyObj, activeBarIdx);
   const voicings = getVoicingsForKey(keyObj);
@@ -2774,7 +2888,8 @@ function renderFretboard() {
   for (let f = fretStart; f <= fretEnd; f++) {
     const inBox = f >= boxMin && f <= boxMax;
     const inNext = !inBox && f >= nextMin && f <= nextMax;
-    html += `<div class="fret-num-cell ${inBox ? 'in-box' : (inNext ? 'next-box-hint' : '')}">${f === 0 ? 'Open(0)' : f}</div>`;
+    const fretLbl = f === 0 ? (isNarrowPortrait ? '0' : 'Open(0)') : f;
+    html += `<div class="fret-num-cell ${inBox ? 'in-box' : (inNext ? 'next-box-hint' : '')}">${fretLbl}</div>`;
   }
   html += `</div>`;
 
@@ -2851,9 +2966,10 @@ function renderStrip() {
   strip.innerHTML = currentEvents.map((ev, idx) => {
     const cur = idx === activeEventIdx;
     const isStar = ev.tag && ev.tag.includes('★');
+    const cleanTab = String(ev.tab || '').replace(/\s*-\s*/g, '-');
     return `<button onclick="onEventClick(${idx})" class="step-chip ${cur ? 'active' : ''} ${isStar ? 'star' : ''}">
       <div style="font-weight:700;">B${ev.barIdx + 1}: ${ev.label} <span style="opacity:0.75;">(${ev.role})</span></div>
-      <div style="opacity:0.82;margin-top:0.12rem;">${ev.tab}</div>
+      <div style="opacity:0.82;margin-top:0.12rem;white-space:nowrap;">${cleanTab}</div>
     </button>`;
   }).join('');
 }
@@ -3473,8 +3589,7 @@ window.addEventListener('keydown', (e) => {
   else if (e.code === 'Backspace') { e.preventDefault(); markStumble(); }
   else if (e.code === 'ArrowUp') { e.preventDefault(); adjustBpm(5); }
   else if (e.code === 'ArrowDown') { e.preventDefault(); adjustBpm(-5); }
-  else if (e.code === 'KeyT') { e.preventDefault(); toggleTimer(); }
-  else if (e.code === 'KeyV') { e.preventDefault(); toggleViewMode(); }
+  else if (e.code === 'KeyT') { e.preventDefault(); tapTempo(); }
   else if (e.code === 'KeyZ') { e.preventDefault(); toggleBoxZoom(); }
   else if (e.code === 'Digit1') { selectBlock('b1'); }
   else if (e.code === 'Digit2') { selectBlock('b2'); }
@@ -3506,7 +3621,7 @@ function applyHydratedState(data) {
   if (data.lastKeyId && KEYS.some(k => k.id === data.lastKeyId)) {
     currentKeyId = data.lastKeyId;
   }
-  if (data.posMode === 'zone' || data.posMode === 'slide') {
+  if (['slide', 'zone', 'low'].includes(data.posMode)) {
     posMode = data.posMode;
     document.getElementById('select-pos-mode').value = posMode;
   }
@@ -3559,14 +3674,7 @@ function applyHydratedState(data) {
     autoJudgeMuteLead = data.autoJudgeMuteLead;
   }
   renderJudgeBarUI();
-  if (data.uiViewMode === 'simple' || data.uiViewMode === 'studio') {
-    uiViewMode = data.uiViewMode;
-  } else {
-    // Default brand-new installs to calm Simple View; keep Full Studio for existing users with progress!
-    const hasExistingBlocks = data.blocks && Object.keys(data.blocks).length > 0;
-    uiViewMode = hasExistingBlocks ? 'studio' : 'simple';
-  }
-  renderViewModeUI();
+  document.body.classList.remove('simple-view-mode');
   if (data.uiScalePx) setUiScale(Number(data.uiScalePx));
   if (data.zoomBoxOnly) {
     zoomBoxOnly = true;
@@ -3587,7 +3695,6 @@ function applyHydratedState(data) {
   document.getElementById('chk-comp').checked = compEnabled;
 
   rebuildUiCirclePreview();
-  resetTimer();
   buildBlockEvents();
   renderAll();
   updateAiContextBar();

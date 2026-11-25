@@ -1,11 +1,11 @@
 :root {
-  --bg-app: #0b0f17;
-  --bg-panel: #131a26;
-  --bg-elevated: #1b2434;
+  --bg-app: #06090f;
+  --bg-panel: #141d2d;
+  --bg-elevated: #1d293e;
   --bg-fretboard: #171311;
   --bg-box-highlight: #282119;
-  --border-subtle: #263246;
-  --border-strong: #3b4d6b;
+  --border-subtle: #364968;
+  --border-strong: #516b94;
   --text-main: #f1f5f9;
   --text-muted: #94a3b8;
   --text-dim: #64748b;
@@ -33,10 +33,28 @@ html {
   box-sizing: inherit;
 }
 
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #06090f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2c3e5a;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #48648f;
+}
+
 body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(circle at top right, #131c2e 0%, var(--bg-app) 55%);
+  background: radial-gradient(circle at top right, #0e1626 0%, var(--bg-app) 60%);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -53,7 +71,7 @@ button, select, input {
   padding: 0.8rem 1.2rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.78rem;
   flex: 1;
 }
 
@@ -62,10 +80,11 @@ button, select, input {
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
-  padding: 0.6rem 0.95rem;
+  background: linear-gradient(180deg, #192538 0%, #121b2b 100%);
+  border: 2px solid #48638b;
+  border-radius: 0.8rem;
+  padding: 0.62rem 0.95rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .header-top-tier {
@@ -156,7 +175,7 @@ button, select, input {
   border-color: var(--border-strong);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 940px) {
   .header-selectors-grid {
     grid-template-columns: 1fr;
   }
@@ -205,7 +224,18 @@ select option {
   font-weight: 700;
 }
 
-.zoom-btn, .icon-btn {
+.zoom-select-group {
+  padding: 0.2rem 0.48rem;
+  gap: 0.35rem;
+}
+
+.select-zoom {
+  padding: 0.22rem 0.45rem;
+  font-size: 0.84rem;
+  min-width: 4.4rem;
+}
+
+.icon-btn {
   background: var(--bg-app);
   color: var(--text-muted);
   border: 1px solid var(--border-subtle);
@@ -217,32 +247,33 @@ select option {
   transition: all 120ms ease;
 }
 
-.zoom-btn:hover, .icon-btn:hover {
+.icon-btn:hover {
   color: var(--text-main);
   border-color: var(--border-strong);
 }
 
-.zoom-btn.active {
-  background: var(--accent-blue-dark);
-  color: #fff;
-  border-color: var(--accent-blue);
-}
-
 /* Collapsible Key & Circle of Fourths Drawer */
 .circle-panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
-  padding: 0.48rem 0.9rem;
+  background: linear-gradient(180deg, #172235 0%, #121b2b 100%);
+  border: 2px solid #3f587d;
+  border-left: 4px solid var(--accent-blue);
+  border-radius: 0.78rem;
+  padding: 0.5rem 0.9rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
-  transition: border-color 140ms ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.circle-panel.circle-active {
+  border-left-color: var(--accent-gold);
 }
 
 .circle-panel.circle-active.open {
-  border-color: rgba(245, 158, 11, 0.55);
-  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.7);
+  border-left: 4px solid var(--accent-gold);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(245, 158, 11, 0.2);
 }
 
 .circle-drawer-header {
@@ -414,23 +445,29 @@ select option {
   text-align: center;
 }
 
-/* 12-Key Visual Ring Strip */
+/* 12-Key Visual Ring Grid (6x2 Studio Matrix in Left Deck Card) */
 .key-ring-grid {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 0.4rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.45rem;
+  flex: 1;
 }
 
 .key-node {
-  background: var(--bg-app);
+  background: #090e17;
   color: var(--text-main);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.5rem;
-  padding: 0.38rem 0.3rem;
+  border: 1.5px solid #384e70;
+  border-radius: 0.52rem;
+  padding: 0.44rem 0.3rem;
   text-align: center;
   cursor: pointer;
   transition: all 110ms ease;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .key-node:hover {
@@ -482,11 +519,12 @@ select option {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.45rem;
   font-family: Consolas, monospace;
-  font-size: 0.86rem;
+  font-size: 0.79rem;
   color: var(--text-muted);
-  padding-top: 0.15rem;
+  padding-top: 0.38rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .next-key-alert {
@@ -514,20 +552,23 @@ select option {
 
 /* Live Guitar Listener & Auto-Judge Bar */
 .judge-panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
+  background: linear-gradient(180deg, #172235 0%, #121b2b 100%);
+  border: 2px solid #3f587d;
+  border-left: 4px solid #64748b;
+  border-radius: 0.78rem;
   padding: 0.65rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .judge-panel.listening {
-  border-color: rgba(16, 185, 129, 0.65);
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.18);
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.06) 0%, var(--bg-panel) 100%);
+  border-color: rgba(16, 185, 129, 0.75);
+  border-left: 4px solid var(--accent-green);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(16, 185, 129, 0.22);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, #121b2b 100%);
 }
 
 .judge-top-row {
@@ -755,22 +796,100 @@ select option {
   font-weight: 700;
 }
 
-/* Command Deck (Mission + Controls) */
+/* Command Deck (Mission Left + Timer/Progression Stack Right) */
 .deck-grid {
   display: grid;
-  grid-template-columns: 7fr 5fr;
+  grid-template-columns: 1fr 1.06fr;
   gap: 0.8rem;
+  align-items: stretch;
 }
 
-.panel-card {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
-  padding: 0.85rem 1rem;
+.deck-grid:has(#right-deck-card.open),
+.deck-grid:has(#left-deck-card.guide-open) {
+  align-items: start;
+}
+
+.deck-right-stack {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 0.7rem;
+  gap: 0.72rem;
+  min-width: 0;
+}
+
+.deck-right-stack:not(:has(#right-deck-card.open)) #progression-deck-card {
+  flex: 1;
+  justify-content: space-between;
+}
+
+.deck-right-stack:not(:has(#right-deck-card.open)) .bars-grid {
+  flex: 1;
+  align-items: stretch;
+}
+
+.panel-card {
+  background: linear-gradient(180deg, #172235 0%, #111928 100%);
+  border: 2px solid #435d85;
+  border-radius: 0.8rem;
+  padding: 0.78rem 0.98rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.48rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  min-width: 0;
+}
+
+#left-deck-card {
+  border-top: 3px solid var(--accent-blue);
+  justify-content: space-between;
+}
+
+.key-deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-bottom: 0.42rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: nowrap;
+}
+
+.key-deck-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.drill-guide-drawer {
+  display: none;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.55rem 0.7rem;
+  background: #0a101a;
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+}
+
+#left-deck-card.guide-open .drill-guide-drawer {
+  display: flex;
+}
+
+#left-deck-card.guide-open #btn-drill-guide .drawer-chevron {
+  transform: rotate(180deg);
+}
+
+#right-deck-card {
+  border-top: 3px solid var(--accent-green);
+}
+
+#progression-deck-card {
+  border-top: 3px solid var(--accent-gold);
+  padding: 0.68rem 0.92rem;
+  gap: 0.42rem;
 }
 
 .drill-header {
@@ -800,20 +919,21 @@ select option {
 }
 
 .drill-purpose {
-  margin: 0.3rem 0 0;
-  font-size: 0.88rem;
-  line-height: 1.45;
+  margin: 0.22rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.38;
   color: var(--text-muted);
 }
 
 .drill-howto {
-  margin-top: 0.4rem;
-  background: var(--bg-app);
-  border-left: 3px solid var(--accent-blue);
-  border-radius: 0.4rem;
-  padding: 0.5rem 0.72rem;
-  font-size: 0.88rem;
-  line-height: 1.45;
+  margin-top: 0.34rem;
+  background: #090d16;
+  border: 1.5px solid #304566;
+  border-left: 4px solid var(--accent-blue);
+  border-radius: 0.45rem;
+  padding: 0.44rem 0.7rem;
+  font-size: 0.85rem;
+  line-height: 1.38;
   color: var(--text-main);
 }
 
@@ -821,57 +941,62 @@ select option {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.45rem;
+  gap: 0.42rem;
+  margin-top: 0.25rem;
+  padding-top: 0.38rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .submode-btn {
   background: var(--bg-elevated);
   color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
+  border: 1.5px solid var(--border-subtle);
   border-radius: 0.45rem;
-  padding: 0.32rem 0.7rem;
-  font-size: 0.83rem;
+  padding: 0.32rem 0.68rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .submode-btn.active {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.22);
   color: var(--accent-gold-bright);
   border-color: var(--accent-gold);
 }
 
 /* 4-Bar Live Progression Cards */
 .bars-section {
-  border-top: 1px solid var(--border-subtle);
-  padding-top: 0.6rem;
+  min-width: 0;
 }
 
 .bars-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.4rem;
-  font-size: 0.83rem;
+  gap: 0.4rem;
+  margin-bottom: 0.1rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .bars-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.5rem;
+  gap: 0.48rem;
 }
 
 .bar-card {
-  background: var(--bg-app);
-  border: 1px solid var(--border-subtle);
+  background: #090e17;
+  border: 1.5px solid #3a5073;
   border-radius: 0.55rem;
-  padding: 0.5rem 0.65rem;
+  padding: 0.48rem 0.55rem;
   text-align: left;
   cursor: pointer;
   transition: all 100ms ease;
   color: var(--text-main);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  min-width: 0;
 }
 
 .bar-card:hover {
@@ -880,19 +1005,23 @@ select option {
 }
 
 .bar-card.active {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(245, 158, 11, 0.15));
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.24), rgba(245, 158, 11, 0.18));
   border: 2px solid var(--accent-gold-bright);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.24);
   transform: translateY(-1px);
 }
 
 .bar-num {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-family: Consolas, monospace;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bar-chord {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 900;
   font-family: Consolas, monospace;
   margin: 0.08rem 0;
@@ -904,34 +1033,114 @@ select option {
 }
 
 .bar-shape {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-family: Consolas, monospace;
   color: var(--accent-blue);
   font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .bar-roman {
-  font-size: 0.75rem;
+  font-size: 0.73rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Right Panel: Timer + BPM + Transport */
-.timer-row {
+/* Right Panel: Pure Tempo & Transport Deck + Collapsible Mixer/Beats */
+.tempo-bar-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.7rem;
-  padding-bottom: 0.58rem;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: nowrap;
+}
+
+.tempo-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  flex-wrap: nowrap;
+}
+
+.btn-tempo-quick {
+  padding: 0.32rem 0.58rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tempo-stepper-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #090e17;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 0.5rem;
+  padding: 0.14rem 0.22rem;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.tempo-step-btn {
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.48rem;
+  font-family: Consolas, monospace;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 100ms ease;
+}
+
+.tempo-step-btn:hover {
+  border-color: var(--accent-blue);
+  background: #25344d;
+}
+
+.tempo-bar-bpm {
+  font-family: Consolas, monospace;
+  font-size: 1.08rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-blue);
+  padding: 0 0.35rem;
+  white-space: nowrap;
+}
+
+.btn-rep-quick {
+  padding: 0.32rem 0.62rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#right-deck-card.open .drawer-chevron {
+  transform: rotate(180deg);
+}
+
+.deck-options-body {
+  display: none;
+  flex-direction: column;
+  gap: 0.52rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.timer-readout {
-  font-size: 1.75rem;
-  font-weight: 900;
-  font-family: Consolas, monospace;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-  color: #fff;
+#right-deck-card.open .deck-options-body {
+  display: flex;
+}
+
+.deck-transport-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .btn-secondary {
@@ -1128,8 +1337,8 @@ select option {
 .transport-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 0.42rem;
+  gap: 0.6rem;
+  margin-top: 0.08rem;
 }
 
 .btn-play {
@@ -1173,13 +1382,15 @@ select option {
 
 /* Fretboard Panel */
 .fretboard-panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
+  background: linear-gradient(180deg, #172235 0%, #101826 100%);
+  border: 2px solid #4a6590;
+  border-top: 3px solid var(--accent-gold-bright);
+  border-radius: 0.82rem;
   padding: 0.85rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .fretboard-toolbar {
@@ -1455,25 +1666,27 @@ select option {
 
 /* Sequence Strip */
 .strip-panel {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
+  background: linear-gradient(180deg, #172235 0%, #111928 100%);
+  border: 2px solid #415a80;
+  border-top: 3px solid var(--accent-purple);
+  border-radius: 0.8rem;
+  padding: 0.78rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .strip-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.42rem;
+  gap: 0.45rem;
 }
 
 .step-chip {
-  background: var(--bg-app);
+  background: #090e17;
   color: var(--text-main);
-  border: 1px solid var(--border-subtle);
+  border: 1.5px solid #384e70;
   border-radius: 0.45rem;
   padding: 0.42rem 0.58rem;
   text-align: left;
@@ -1507,10 +1720,11 @@ select option {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.42rem 0.85rem;
-  border-radius: 0.55rem;
-  background: rgba(19, 26, 38, 0.75);
-  border: 1px solid var(--border-subtle);
+  padding: 0.45rem 0.9rem;
+  border-radius: 0.6rem;
+  background: #111928;
+  border: 1.5px solid #3b5275;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
   font-size: 0.79rem;
   color: var(--text-muted);
 }
@@ -1776,7 +1990,7 @@ kbd {
   user-select: text;
 }
 
-@media (max-width: 1220px) {
+@media (max-width: 940px) {
   .deck-grid {
     grid-template-columns: 1fr;
   }
@@ -1801,12 +2015,16 @@ kbd {
   grid-column: 1 / -1;
 }
 
-@media (max-width: 1120px) {
+@media (max-width: 940px) {
   .compact-drawers-row {
     grid-template-columns: 1fr;
   }
   .header-top-tier {
     flex-wrap: wrap;
+  }
+  .header-controls {
+    flex-wrap: wrap;
+    min-width: 0;
   }
 }
 
@@ -1848,38 +2066,354 @@ kbd {
   display: none !important;
 }
 
-/* Simple View vs. Full Studio View Switch */
-.btn-view-mode {
-  background: rgba(167, 139, 250, 0.16);
-  color: #ddd6fe;
-  border: 1px solid var(--accent-purple);
-  border-radius: 0.45rem;
-  padding: 0.36rem 0.72rem;
-  font-size: 0.85rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: all 120ms ease;
-}
-
-.btn-view-mode:hover {
-  background: rgba(167, 139, 250, 0.28);
-}
-
-.btn-view-mode.simple-active {
-  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+.icon-btn.active-916 {
+  background: var(--accent-gold);
   color: #1c1917;
   border-color: #fde68a;
 }
 
-/* Clean, Non-Daunting Simple View Layout */
-body.simple-view-mode .strip-panel,
-body.simple-view-mode .timer-row,
-body.simple-view-mode .drill-purpose,
-body.simple-view-mode .shortcut-bar {
-  display: none !important;
-}
+/* Commercial-Grade 9:16 Portrait Reel / Shorts Layout */
+@media (max-width: 720px) {
+  .portrait-hide-sub {
+    display: none !important;
+  }
 
-body.simple-view-mode .circle-panel:not(.circle-active) #key-ring-grid,
-body.simple-view-mode .circle-panel:not(.circle-active) #circle-telemetry {
-  display: none !important;
+  .app-shell {
+    padding: 0.42rem 0.5rem 0.7rem;
+    gap: 0.46rem;
+    overflow-x: hidden;
+  }
+
+  /* 1. Clean Top Header — Zero Clipped Buttons */
+  .top-header {
+    padding: 0.48rem 0.65rem;
+    gap: 0.42rem;
+  }
+
+  .header-top-tier {
+    flex-wrap: wrap !important;
+    gap: 0.38rem;
+  }
+
+  .brand-title-stack {
+    flex: 1 1 100%;
+  }
+
+  .brand-title {
+    font-size: 0.92rem;
+  }
+
+  .brand-sub {
+    font-size: 0.71rem;
+  }
+
+  .header-controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap !important;
+    justify-content: space-between;
+    gap: 0.3rem;
+  }
+
+  /* Hide desktop Zoom group in 9:16 so Roadmap + AI Coach + 16:9 + Fullscreen fit 100% cleanly */
+  .top-header .header-controls > .ctrl-group {
+    display: none !important;
+  }
+
+  .btn-roadmap,
+  .btn-ai-coach {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 0.3rem 0.45rem !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap;
+  }
+
+  .top-header .icon-btn {
+    padding: 0.28rem 0.48rem;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .header-selectors-grid {
+    gap: 0.35rem;
+    padding-top: 0.38rem;
+  }
+
+  .selector-slot {
+    padding: 0.2rem 0.48rem;
+  }
+
+  .selector-slot .select-studio {
+    font-size: 0.8rem;
+    padding: 0.22rem 0.4rem;
+  }
+
+  /* 2. Loop Options & Auto-Judge Drawers — Single Crisp Line Inside Borders */
+  .compact-drawers-row {
+    gap: 0.42rem;
+  }
+
+  .circle-panel {
+    padding: 0.4rem 0.62rem;
+    overflow: hidden;
+  }
+
+  .circle-drawer-header {
+    flex-wrap: nowrap !important;
+    gap: 0.35rem;
+  }
+
+  .circle-mode-badge {
+    font-size: 0.71rem;
+    padding: 0.16rem 0.42rem;
+  }
+
+  .circle-summary-key {
+    font-size: 0.75rem;
+  }
+
+  .btn-drawer-arrow {
+    padding: 0.22rem 0.46rem;
+    font-size: 0.73rem;
+    gap: 0.26rem;
+  }
+
+  .judge-panel:not(.listening) {
+    padding: 0.38rem 0.62rem;
+    overflow: hidden;
+  }
+
+  .judge-panel:not(.listening) .judge-left-controls {
+    flex-wrap: nowrap !important;
+    overflow: hidden;
+    gap: 0.38rem;
+  }
+
+  .judge-panel:not(.listening) .btn-judge-toggle {
+    font-size: 0.75rem;
+    padding: 0.24rem 0.5rem;
+  }
+
+  .judge-collapsed-hint {
+    flex: 1 1 0;
+    font-size: 0.74rem;
+  }
+
+  /* 3. 12-Key Circle Card (4x3 Matrix) */
+  #left-deck-card {
+    padding: 0.55rem 0.65rem;
+    gap: 0.4rem;
+  }
+
+  .key-deck-header {
+    flex-wrap: nowrap !important;
+    padding-bottom: 0.35rem;
+  }
+
+  .key-deck-title-group strong {
+    font-size: 0.84rem !important;
+  }
+
+  .key-ring-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.35rem;
+  }
+
+  .key-node {
+    padding: 0.32rem 0.2rem;
+  }
+
+  .key-node-name {
+    font-size: 0.86rem;
+  }
+
+  .key-node-sub {
+    font-size: 0.65rem;
+  }
+
+  /* 4. One-Screen Performance Stage: 4-Bar Chords + Tempo/Play + 6-String Fretboard */
+  .deck-grid,
+  .deck-right-stack {
+    gap: 0.46rem;
+  }
+
+  #progression-deck-card {
+    padding: 0.46rem 0.62rem;
+    gap: 0.28rem;
+  }
+
+  .bars-header {
+    flex-wrap: nowrap !important;
+    font-size: 0.74rem;
+    margin-bottom: 0.04rem;
+  }
+
+  .bars-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  .bar-card {
+    padding: 0.3rem 0.48rem;
+  }
+
+  .bar-num {
+    font-size: 0.66rem;
+  }
+
+  .bar-chord {
+    font-size: 1rem;
+    margin: 0.02rem 0;
+  }
+
+  .bar-shape {
+    font-size: 0.71rem;
+  }
+
+  .bar-roman {
+    font-size: 0.66rem;
+  }
+
+  /* Sleek 2-Row Tempo & Transport Card */
+  #right-deck-card {
+    padding: 0.46rem 0.62rem;
+    gap: 0.35rem;
+  }
+
+  .tempo-bar-row {
+    flex-wrap: nowrap !important;
+    gap: 0.28rem;
+    padding-bottom: 0.35rem;
+  }
+
+  .tempo-bar-left {
+    flex-wrap: nowrap !important;
+    gap: 0.25rem;
+  }
+
+  .btn-tempo-quick {
+    padding: 0.24rem 0.42rem;
+    font-size: 0.73rem;
+  }
+
+  .tempo-stepper-pill {
+    padding: 0.1rem 0.16rem;
+    gap: 0.16rem;
+  }
+
+  .tempo-step-btn {
+    padding: 0.16rem 0.34rem;
+    font-size: 0.75rem;
+  }
+
+  .tempo-bar-bpm {
+    font-size: 0.86rem;
+    padding: 0 0.22rem;
+  }
+
+  .btn-rep-quick {
+    padding: 0.24rem 0.44rem;
+    font-size: 0.73rem;
+  }
+
+  .transport-row {
+    flex-wrap: nowrap !important;
+    gap: 0.38rem;
+    margin-top: 0;
+  }
+
+  #btn-metro-only {
+    padding: 0.42rem 0.5rem;
+    font-size: 0.74rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .btn-play {
+    flex: 1 1 auto;
+    width: auto;
+    padding: 0.44rem 0.58rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  /* Compact, Full-Bleed 6-String Fretboard — Zero Horizontal Scrollbar */
+  .fretboard-panel {
+    padding: 0.48rem 0.6rem;
+    gap: 0.32rem;
+  }
+
+  .fretboard-toolbar {
+    gap: 0.32rem;
+  }
+
+  .fretboard-tools-left {
+    width: 100%;
+    gap: 0.32rem;
+    justify-content: space-between;
+  }
+
+  .fretboard-tools-left strong {
+    font-size: 0.86rem !important;
+  }
+
+  .shape-family-badge {
+    font-size: 0.7rem;
+    padding: 0.16rem 0.42rem;
+  }
+
+  #btn-box-zoom {
+    padding: 0.22rem 0.46rem;
+    font-size: 0.73rem;
+  }
+
+  #select-label {
+    font-size: 0.76rem;
+    padding: 0.2rem 0.42rem;
+    flex: 1 1 auto;
+  }
+
+  .fretboard-panel .note-inspector {
+    display: none;
+  }
+
+  .fret-num-cell {
+    font-size: 0.76rem;
+    padding-bottom: 0.16rem;
+  }
+
+  .fret-num-cell.in-box {
+    font-size: 0.84rem;
+  }
+
+  .fret-string-row,
+  .zoom-box-mode .fret-string-row {
+    height: 2.52rem;
+  }
+
+  .string-header {
+    font-size: 0.78rem;
+  }
+
+  .note-badge,
+  .zoom-box-mode .note-badge {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.88rem;
+  }
+
+  .legend-row {
+    gap: 0.28rem;
+    font-size: 0.72rem;
+  }
+
+  .legend-items {
+    gap: 0.5rem;
+  }
+
+  .legend-swatch {
+    width: 0.72rem;
+    height: 0.72rem;
+  }
 }

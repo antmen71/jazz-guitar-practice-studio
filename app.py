@@ -17,7 +17,7 @@ from coach_assistant import (
     check_off_topic_guardrail,
 )
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.2.0"
 IS_FROZEN = bool(getattr(sys, "frozen", False))
 RESOURCE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 EXE_DIR = Path(sys.executable).resolve().parent if IS_FROZEN else Path(__file__).resolve().parent
@@ -198,6 +198,34 @@ class StudioApi:
             self._window.toggle_fullscreen()
             return True
         return False
+
+    def toggle_portrait_916(self) -> dict:
+        if self._window is None:
+            return {"portrait": False}
+        cur_w = getattr(self._window, "width", 1620) or 1620
+        cur_h = getattr(self._window, "height", 980) or 980
+        is_currently_portrait = cur_w < cur_h
+        if is_currently_portrait:
+            self._window.resize(1620, 980)
+            return {"portrait": False, "width": 1620, "height": 980}
+
+        target_h = 1000
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                from ctypes import wintypes
+                rect = wintypes.RECT()
+                if ctypes.windll.user32.SystemParametersInfoW(0x0030, 0, ctypes.byref(rect), 0):
+                    work_h = rect.bottom - rect.top
+                    if work_h >= 720:
+                        target_h = min(work_h - 8, 1080)
+            except Exception:
+                pass
+        # Account for Windows title bar (~32px) so OBS Window Capture client area is exact 9:16
+        client_h = max(640, target_h - 32)
+        target_w = int(round(client_h * 9 / 16)) + 16
+        self._window.resize(target_w, target_h)
+        return {"portrait": True, "width": target_w, "height": target_h}
 
     def open_external_url(self, url: str) -> bool:
         if isinstance(url, str) and url.startswith("https://"):
@@ -491,7 +519,7 @@ def main() -> int:
         js_api=api,
         width=1620,
         height=980,
-        min_size=(1060, 700),
+        min_size=(460, 620),
         resizable=True,
         background_color="#0b0f17",
     )
@@ -526,23 +554,29 @@ def main() -> int:
                   toggleCircleDrawer(false);
                   if (document.querySelectorAll('.key-node').length !== 12) return false;
 
-                  // Verify top dropdown dynamically changes per Block (b1=Chord, b2=Arp, b3=Mode, b4=Solo)!
+                  // Verify top dropdown AND Neck dropdown dynamically change per Block (b1=Chord, b2=Arp, b3=Mode, b4=Solo)!
+                  const neckFirstTexts = new Set();
                   selectBlock('b1');
                   if (!document.getElementById('select-module').options[0].text.includes('Chord 1.1')) return false;
+                  neckFirstTexts.add(document.getElementById('select-pos-mode').options[0].text);
                   selectBlock('b2');
                   if (!document.getElementById('select-module').options[0].text.includes('Arp 2.1')) return false;
+                  neckFirstTexts.add(document.getElementById('select-pos-mode').options[0].text);
                   selectBlock('b3');
                   if (!document.getElementById('select-module').options[0].text.includes('Mode 3.1')) return false;
+                  neckFirstTexts.add(document.getElementById('select-pos-mode').options[0].text);
                   selectBlock('b4');
                   if (!document.getElementById('select-module').options[0].text.includes('Solo 4.1')) return false;
+                  neckFirstTexts.add(document.getElementById('select-pos-mode').options[0].text);
+                  if (neckFirstTexts.size !== 4) return false;
 
-                  // Test all 4 playable modules (m1, m2, m3, m4) across BOTH Neck modes, 12 keys & 4 blocks (384 tables)!
+                  // Test all 4 playable modules (m1, m2, m3, m4) across ALL 3 Neck modes, 12 keys & 4 blocks (576 tables)!
                   for (const modId of ['m1', 'm2', 'm3', 'm4']) {
                     selectModule(modId);
                     const pWrap = document.getElementById('pos-strategy-wrap');
                     const pSel = document.getElementById('select-pos-mode');
-                    if (!pWrap || pWrap.style.display === 'none' || !pSel || pSel.options.length < 2) return false;
-                    for (const nkMode of ['slide', 'zone']) {
+                    if (!pWrap || pWrap.style.display === 'none' || !pSel || pSel.options.length < 3) return false;
+                    for (const nkMode of ['slide', 'zone', 'low']) {
                       setPosMode(nkMode);
                       for (const k of KEYS) {
                         for (const b of ['b1', 'b2', 'b3', 'b4']) {
@@ -609,6 +643,14 @@ def main() -> int:
 
         webview.start(gui="edgechromium", icon=icon_arg)
         return 0
+    except Exception as exc:
+        try:
+            print(f"WebView2 startup error ({exc}); falling back to browser app window.", file=sys.stderr)
+        except Exception:
+            pass
+        if smoke_test:
+            return 1
+        return launch_edge_app_fallback()
     finally:
         api.shutdown()
 

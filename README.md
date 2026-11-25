@@ -6,12 +6,17 @@ Designed for serious daily jazz guitar workouts across all **12 keys**, combinin
 
 ---
 
-## ⬇️ Download for Windows (No Python Required — v1.1.0)
+## ⬇️ Download for Windows (No Python Required — v1.2.0)
 
-Download and run directly on **Windows 10 / Windows 11 (64-bit)** from [**GitHub Releases (v1.1.0)**](https://github.com/antmen71/jazz-guitar-practice-studio/releases/tag/v1.1.0):
+Download and run directly on **Windows 10 / Windows 11 (64-bit)** from [**GitHub Releases (v1.2.0)**](https://github.com/antmen71/jazz-guitar-practice-studio/releases/tag/v1.2.0):
 
-- 💿 **[JazzGuitarPracticeStudio_Setup_v1.1.0.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.1.0/JazzGuitarPracticeStudio_Setup_v1.1.0.exe)** — **Recommended Windows Installer** (creates Start Menu & optional Desktop shortcuts, English & Turkish setup wizard, clean uninstaller; stores user progress safely in `%LOCALAPPDATA%\JazzGuitarPracticeStudio`).
-- 🚀 **[JazzGuitarPracticeStudio_Portable_v1.1.0_win64.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.1.0/JazzGuitarPracticeStudio_Portable_v1.1.0_win64.exe)** — **Single-File Portable `.exe`** (no installation, no `_internal` DLL folder, immune to Windows 10 `.zip` DLL blocking; also available wrapped as **[JazzGuitarPracticeStudio_Portable_v1.1.0_win64.zip](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.1.0/JazzGuitarPracticeStudio_Portable_v1.1.0_win64.zip)**).
+- 💿 **[JazzGuitarPracticeStudio_Setup_v1.2.0.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.2.0/JazzGuitarPracticeStudio_Setup_v1.2.0.exe)** — **Recommended Windows Installer** (creates Start Menu & optional Desktop shortcuts, English & Turkish setup wizard, clean uninstaller; stores user progress safely in `%LOCALAPPDATA%\JazzGuitarPracticeStudio`).
+- 🚀 **[JazzGuitarPracticeStudio_Portable_v1.2.0_win64.exe](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.2.0/JazzGuitarPracticeStudio_Portable_v1.2.0_win64.exe)** — **Single-File Portable `.exe`** (no installation, zero external `_internal` DLL folder, immune to Windows 10 `.zip` Mark-of-the-Web blocking; also available wrapped as **[JazzGuitarPracticeStudio_Portable_v1.2.0_win64.zip](https://github.com/antmen71/jazz-guitar-practice-studio/releases/download/v1.2.0/JazzGuitarPracticeStudio_Portable_v1.2.0_win64.zip)**).
+
+### What's New in v1.2.0
+- **Streamlined, Non-Daunting Studio Deck:** High-contrast solid section frames, always-visible **12-Key Circle & Position Map** on the left, **4-Bar ii–V–I Progression** + direct **Tap / BPM / Clean Rep / Play** transport right above the Interactive Fretboard, and collapsible **`Loop Options ▼`**, **`Mixer & Beats ▼`**, and **`Drill Info ▼`** drawers.
+- **One-Click `📱 9:16` Portrait Mode:** Resizes into a scroll-aligned vertical stage showing 4-Bar Chords, Tempo/Play, and the Focus-Zoomed 6-String Fretboard together in one frame.
+- **Windows 10 Portable Hardening:** Single-file Portable `.exe` with automatic Mark-of-the-Web (`:Zone.Identifier`) unblocking and browser-app fallback.
 
 ---
 

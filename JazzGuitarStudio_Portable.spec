@@ -66,7 +66,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name="JazzGuitarPracticeStudio_Portable_v1.1.0_win64",
+    name="JazzGuitarPracticeStudio_Portable_v1.2.0_win64",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
